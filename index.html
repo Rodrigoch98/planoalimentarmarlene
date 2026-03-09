@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Plano Alimentar - Marlene</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --bg-app: #FFFBFD;
+  --surface: #FFFFFF;
+  --primary: #E8829F;
+  --primary-dark: #D46A8A;
+  --primary-light: #FDF0F4;
+  --secondary: #B08DD4;
+  --secondary-light: #F8F3FD;
+  --accent: #E8A84C;
+  --accent-light: #FFF8EC;
+  --text-main: #2D2435;
+  --text-sec: #5C5068;
+  --text-muted: #A299AC;
+  --border: #F0E6EC;
+  --shadow-sm: 0 1px 3px rgba(180,140,160,0.08);
+  --shadow-md: 0 4px 12px rgba(180,140,160,0.12);
+}
+
+body {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-app);
+  color: var(--text-main);
+  min-height: 100vh; min-height: -webkit-fill-available;
+  padding-bottom: 90px; font-size: 15px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none; overflow-x: hidden;
+}
+
+.tab-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-around;
+  z-index: 200;
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+  box-shadow: 0 -4px 20px rgba(180,140,160,0.06);
+}
+.tab-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  padding: 4px 0; background: none; border: none;
+  color: var(--text-muted); font-size: 11px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s ease; gap: 4px;
+}
+.tab-btn.active { color: var(--primary-dark); transform: translateY(-2px); }
+.tab-btn svg { width: 24px; height: 24px; stroke-width: 2px; }
+
+.tab-content { display: none; padding: 16px; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.tab-content.active { display: block; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.card {
+  background: var(--surface); border-radius: 16px; padding: 20px;
+  margin-bottom: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+}
+.card-title {
+  font-size: 16px; font-weight: 700; color: var(--text-main);
+  margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid var(--border); padding-bottom: 10px;
+}
+
+.sub-nav {
+  display: flex; gap: 6px; background: #F8EDF2; padding: 4px; border-radius: 12px; margin-bottom: 20px;
+}
+.sub-nav-btn {
+  flex: 1; padding: 10px; font-size: 13px; font-weight: 600;
+  color: var(--text-sec); background: transparent; border: none;
+  border-radius: 8px; cursor: pointer; transition: all 0.2s;
+}
+.sub-nav-btn.active { background: var(--surface); color: var(--text-main); box-shadow: var(--shadow-sm); }
+
+.meal {
+  background: var(--surface); border-radius: 16px; padding: 14px; margin-bottom: 12px;
+  border: 1px solid var(--border); border-left: 5px solid var(--secondary);
+  box-shadow: var(--shadow-sm); overflow: hidden;
+}
+.meal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 6px; flex-wrap: wrap; gap: 6px;
+}
+.meal-time {
+  font-size: 14px; color: var(--text-main); font-weight: 800;
+  background: var(--bg-app); padding: 4px 10px; border-radius: 6px;
+}
+.meal-name {
+  font-size: 12px; color: var(--text-sec); font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
+}
+.meal-subs {
+  font-size: 13px; color: var(--text-sec); background: #FDF5F8;
+  padding: 10px 12px; border-radius: 8px; margin-top: 10px;
+  border: 1px dashed var(--border);
+}
+.meal-subs summary {
+  cursor: pointer; color: var(--primary-dark); font-weight: 600;
+  margin-bottom: 6px; list-style: none;
+  display: flex; align-items: center; gap: 4px; font-size: 13px;
+}
+.meal-subs summary::before { content: "↻"; font-weight: bold; }
+.meal-subs summary::-webkit-details-marker { display: none; }
+.meal-subs .sub {
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+  font-size: 13px; line-height: 1.5; word-wrap: break-word;
+}
+.meal-subs .sub:last-child { border-bottom: none; }
+.meal-subs .sub strong { color: var(--text-main); font-size: 12px; }
+
+.meal.cafe { border-left-color: var(--accent); }
+.meal.almoco { border-left-color: var(--primary); }
+.meal.jantar { border-left-color: #B08DD4; }
+.meal.lanche { border-left-color: var(--text-muted); }
+.meal.ceia { border-left-color: #7CB8A0; }
+
+.badges-container { display: flex; gap: 4px; flex-shrink: 0; }
+.badge { font-size: 11px; padding: 3px 7px; border-radius: 6px; font-weight: 700; white-space: nowrap; }
+.badge-cal { background: var(--accent-light); color: #96660E; }
+.badge-prot { background: var(--secondary-light); color: #6D42A0; }
+
+.day-total {
+  display: flex; justify-content: center; align-items: center; gap: 16px;
+  background: linear-gradient(135deg, #D46A8A, #E8829F, #B08DD4); color: white;
+  padding: 14px 16px; border-radius: 12px; margin-bottom: 16px;
+  box-shadow: var(--shadow-md);
+}
+.day-total span { font-size: 15px; font-weight: 700; }
+
+.list-item {
+  display: flex; flex-direction: column; padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.list-item:last-child { border-bottom: none; }
+.list-item strong { color: var(--text-main); font-size: 15px; margin-bottom: 4px; }
+.list-item span { font-size: 14px; color: var(--text-sec); }
+.list-cat {
+  background: var(--primary-light); color: var(--primary-dark); font-size: 12px; font-weight: 800;
+  text-transform: uppercase; padding: 8px 12px; border-radius: 6px; margin: 16px 0 8px;
+}
+
+.med-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px; background: var(--surface); border-bottom: 1px solid var(--border);
+}
+.med-info-box { flex: 1; }
+.med-name { font-size: 15px; font-weight: 700; color: var(--text-main); }
+.med-detail { font-size: 13px; color: var(--text-sec); margin-top: 2px; }
+.med-dose-pill {
+  background: var(--primary-light); color: var(--primary-dark);
+  font-weight: 700; font-size: 12px; padding: 4px 10px;
+  border-radius: 20px; white-space: nowrap; margin-left: 10px;
+}
+.med-section h3 {
+  font-size: 13px; color: var(--text-muted); margin: 16px 0 8px;
+  text-transform: uppercase; font-weight: 700; letter-spacing: 1px;
+}
+
+.taco-row { display: grid; grid-template-columns: 2fr 1fr 1fr; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text-sec); }
+.taco-row.header { color: var(--primary-dark); font-weight: 800; font-size: 12px; text-transform: uppercase; border-bottom: 2px solid var(--border); }
+.taco-val { font-weight: 600; color: var(--text-main); }
+
+.alert { padding: 16px; border-radius: 12px; font-size: 14px; line-height: 1.5; margin-bottom: 16px; border-left: 4px solid; display: flex; gap: 12px; }
+.alert-icon { font-size: 20px; }
+.alert-blue { background: #F3F0FF; border-color: #B08DD4; color: #4C2882; }
+
+.food-list { margin: 4px 0 8px; }
+.food-line {
+  display: flex; align-items: baseline; gap: 6px;
+  padding: 5px 0; border-bottom: 1px solid #FAF5F7;
+  font-size: 14px; line-height: 1.4;
+}
+.food-line:last-child { border-bottom: none; }
+.food-dot {
+  flex-shrink: 0; width: 6px; height: 6px;
+  border-radius: 50%; background: var(--primary); margin-top: 6px;
+}
+.food-desc { flex: 1; min-width: 0; }
+.food-desc-name { color: var(--text-main); font-weight: 600; }
+.food-desc-measure { display: block; font-size: 12px; color: var(--text-sec); font-weight: 400; margin-top: 1px; }
+.meal-label {
+  font-size: 11px; color: var(--primary-dark);
+  text-transform: uppercase; font-weight: 700;
+  letter-spacing: 0.5px; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 4px;
+}
+
+.header {
+  background: linear-gradient(135deg, #D46A8A 0%, #E8829F 40%, #C9A0D4 100%);
+  padding: 14px 20px 12px;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 4px 20px rgba(212,106,138,0.25);
+}
+.header-inner { display: flex; align-items: center; justify-content: space-between; }
+.header-left { display: flex; align-items: center; gap: 10px; }
+.header-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: rgba(255,255,255,0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  backdrop-filter: blur(4px);
+}
+.header h1 { font-size: 16px; font-weight: 800; color: white; letter-spacing: 0.5px; }
+.header-sub { font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 1px; font-weight: 500; }
+.header-badge {
+  font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 6px;
+  background: rgba(255,255,255,0.2); color: white;
+  border: 1px solid rgba(255,255,255,0.3); white-space: nowrap;
+}
+
+.week-nav {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface); border-radius: 12px;
+  padding: 8px 12px; margin-bottom: 12px;
+  border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+}
+.week-nav-arrow {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: var(--bg-app); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0; font-size: 18px; color: var(--text-sec);
+  transition: all 0.15s;
+}
+.week-nav-arrow:active { background: var(--primary-light); }
+.week-nav-center { flex: 1; text-align: center; min-width: 0; }
+.week-nav-num { font-size: 16px; font-weight: 800; color: var(--text-main); }
+.week-nav-date { font-size: 12px; color: var(--text-sec); margin-top: 1px; }
+.week-nav-type {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  background: var(--primary-light); color: var(--primary-dark);
+  padding: 2px 8px; border-radius: 4px; margin-top: 4px;
+}
+
+.day-pills { display: flex; gap: 4px; margin-bottom: 14px; }
+.day-pill {
+  flex: 1; text-align: center; padding: 10px 2px;
+  border-radius: 10px; cursor: pointer;
+  background: var(--surface); border: 1.5px solid var(--border); transition: all 0.15s;
+}
+.day-pill-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+.day-pill-day { font-size: 15px; font-weight: 800; color: var(--text-sec); margin-top: 1px; }
+.day-pill.active { background: var(--primary); border-color: var(--primary); }
+.day-pill.active .day-pill-label, .day-pill.active .day-pill-day { color: white; }
+.day-pill.wknd { background: #F8F0F5; border-color: #E8D4E0; }
+.day-pill.wknd.active { background: var(--secondary); border-color: var(--secondary); }
+
+.meal-meds {
+  display: flex; flex-wrap: wrap; gap: 4px;
+  margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border);
+}
+.med-pill {
+  font-size: 11px; font-weight: 600; padding: 3px 8px;
+  border-radius: 6px; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;
+}
+.med-pill-rose { background: #FDF0F4; color: #A0456A; }
+.med-pill-blue { background: #F0EEFF; color: #5B3EA0; }
+.med-pill-purple { background: #F5F0FA; color: #6E4A96; }
+
+.resumo-hero {
+  background: linear-gradient(135deg, #D46A8A, #E8829F, #C9A0D4);
+  border-radius: 16px; padding: 20px; color: white;
+  margin-bottom: 16px; box-shadow: var(--shadow-md);
+}
+.resumo-hero h2 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+.resumo-hero p { font-size: 13px; opacity: 0.9; }
+.resumo-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 16px; }
+.resumo-stat { background: rgba(255,255,255,0.18); border-radius: 10px; padding: 12px; text-align: center; backdrop-filter: blur(4px); }
+.resumo-stat-val { font-size: 22px; font-weight: 800; }
+.resumo-stat-label { font-size: 10px; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+.resumo-progress { margin-top: 16px; background: rgba(255,255,255,0.12); border-radius: 8px; padding: 12px; }
+.progress-bar { height: 10px; background: rgba(255,255,255,0.15); border-radius: 5px; overflow: hidden; margin-top: 8px; }
+.progress-fill {
+  height: 100%; border-radius: 5px; width: 0%;
+  transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(90deg, #F5B8CB, #E8829F, #C9A0D4);
+  box-shadow: 0 0 8px rgba(232,130,159,0.5); position: relative;
+}
+.progress-fill::after {
+  content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 20px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3));
+  border-radius: 0 5px 5px 0;
+}
+
+.resumo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.resumo-card-sm {
+  background: var(--surface); border-radius: 12px; padding: 14px;
+  border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+}
+.resumo-card-sm h4 { font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-bottom: 6px; }
+.resumo-card-sm p { font-size: 14px; color: var(--text-main); font-weight: 600; line-height: 1.4; }
+
+.restricoes-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+.restricao-tag {
+  font-size: 12px; padding: 4px 10px; border-radius: 6px;
+  background: #FEF2F2; color: #991B1B; font-weight: 600; border: 1px solid #FECACA;
+}
+.liberado-tag {
+  font-size: 12px; padding: 4px 10px; border-radius: 6px;
+  background: #ECFDF5; color: #065F46; font-weight: 600; border: 1px solid #A7F3D0;
+}
+
+.ideal-box {
+  background: linear-gradient(135deg, #FDF5F8, #F8F0FD);
+  border: 1px solid #F0DAE6; border-radius: 12px; padding: 14px; margin-bottom: 16px;
+}
+.ideal-box h4 { font-size: 13px; color: var(--primary-dark); font-weight: 700; margin-bottom: 6px; }
+.ideal-box p { font-size: 13px; color: var(--text-sec); line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-left">
+      <div class="header-icon">🌸</div>
+      <div>
+        <h1>PLANO NUTRICIONAL</h1>
+        <div class="header-sub">Marlene · Mar → Set/2026</div>
+      </div>
+    </div>
+    <div class="header-badge" id="headerBadge">Sem 1</div>
+  </div>
+</div>
+
+<div id="tab-resumo" class="tab-content active">
+  <div class="resumo-hero">
+    <h2>Programa de Emagrecimento</h2>
+    <p>100% dieta · Déficit calórico controlado · Com saladas e alimentos variados</p>
+    <div class="resumo-stats">
+      <div class="resumo-stat"><div class="resumo-stat-val">1300</div><div class="resumo-stat-label">kcal/dia</div></div>
+      <div class="resumo-stat"><div class="resumo-stat-val">~85g</div><div class="resumo-stat-label">proteína/dia</div></div>
+      <div class="resumo-stat"><div class="resumo-stat-val">~511</div><div class="resumo-stat-label">déficit/dia</div></div>
+      <div class="resumo-stat"><div class="resumo-stat-val">0.5kg</div><div class="resumo-stat-label">perda/semana</div></div>
+    </div>
+    <div class="resumo-progress" id="progressSection">
+      <div style="display:flex;justify-content:space-between;font-size:12px;align-items:baseline;">
+        <span><strong id="pesoAtual">89 kg</strong></span>
+        <span style="font-size:10px;opacity:0.7;" id="progressWeekLabel">Semana 0/26</span>
+        <span>meta <strong>76 kg</strong></span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;margin-top:6px;opacity:0.7;">
+        <span id="pesoLost">0 kg perdidos</span>
+        <span id="pesoRemain">~13 kg restantes</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="ideal-box">
+    <h4>📊 Análise de Peso Ideal (54 anos · 168cm)</h4>
+    <p>
+      <strong>IMC atual:</strong> 31,5 (Obesidade grau I)<br>
+      <strong>Faixa saudável (IMC 18,5-24,9):</strong> 52-70 kg<br>
+      <strong>Recomendado p/ 54 anos (IMC 22-24):</strong> 62-68 kg<br>
+      <strong>Meta 1ª fase:</strong> 76 kg (IMC 26,9 — sobrepeso leve) ✅<br>
+      <strong>Meta 2ª fase (futura):</strong> 68 kg (IMC 24,1 — peso saudável) 🎯
+    </p>
+  </div>
+
+  <div class="resumo-grid">
+    <div class="resumo-card-sm">
+      <h4>📅 Período</h4>
+      <p>10/03/2026<br>a 08/09/2026<br><span style="font-size:12px;color:var(--text-muted);">26 semanas · 4 cardápios</span></p>
+    </div>
+    <div class="resumo-card-sm">
+      <h4>⚖️ TDEE Base</h4>
+      <p>~1.811 kcal<br><span style="font-size:12px;color:var(--text-muted);">Sedentária · 89kg · 168cm · 54a</span></p>
+    </div>
+    <div class="resumo-card-sm">
+      <h4>🍽️ Refeições/Dia</h4>
+      <p>6 refeições<br><span style="font-size:12px;color:var(--text-muted);">Café · 2 lanches · Almoço · Jantar · Ceia</span></p>
+    </div>
+    <div class="resumo-card-sm">
+      <h4>🥗 Saladas</h4>
+      <p>Almoço + Jantar<br><span style="font-size:12px;color:var(--text-muted);">Salada verde, vinagrete, folhas</span></p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Regras do Plano</div>
+    <div style="font-size:13px; line-height:1.8; color:var(--text-sec);">
+      <p>☕ <strong>Café da manhã:</strong> Café c/ leite ou puro · Aveia ou tapioca · Mel como adoçante</p>
+      <p>🥗 <strong>Almoço/Jantar:</strong> Sempre com salada verde à vontade · Vinagrete liberado · Limão</p>
+      <p>🏠 <strong>Fins de semana:</strong> Leite liberado · Liquidificador · Sábado almoço fixo (arroz+feijão+ovos)</p>
+      <p>🔥 <strong>Preparo:</strong> Grelhado, assado ou cozido · Sem fritura · Gordura = manteiga mínima</p>
+      <p>🍵 <strong>Ceia:</strong> Chá (camomila, erva-cidreira, hortelã) ou iogurte ou fruta</p>
+      <p>🥩 <strong>Porções:</strong> 120g proteína almoço · 100g jantar · 80g arroz (3 col.) · 80g feijão (1 concha)</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🚫 Restrições Alimentares</div>
+    <div class="restricoes-grid" style="margin-bottom:12px;">
+      <span class="restricao-tag">🥜 Pasta de amendoim</span>
+      <span class="restricao-tag">🫒 Azeite de oliva</span>
+      <span class="restricao-tag">🌽 Canjica</span>
+      <span class="restricao-tag">🐟 Salmão/caros</span>
+    </div>
+    <div style="font-size:12px;color:var(--text-muted);font-weight:600;margin:10px 0 6px;">✅ LIBERADOS</div>
+    <div class="restricoes-grid">
+      <span class="liberado-tag">🥗 Saladas</span>
+      <span class="liberado-tag">☕ Café</span>
+      <span class="liberado-tag">🥣 Aveia</span>
+      <span class="liberado-tag">🌽 Cuscuz</span>
+      <span class="liberado-tag">🍯 Mel</span>
+      <span class="liberado-tag">🍵 Chás</span>
+      <span class="liberado-tag">🥗 Vinagrete</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💊 Suplementos Recomendados</div>
+    <div style="font-size:13px; line-height:1.7; color:var(--text-sec);">
+      <p>✅ <strong>Ômega 3 Ultra Growth</strong> — Seguro c/ Citalopram · 1 cáps no almoço</p>
+      <p>✅ <strong>Multivitamínico Growth</strong> — 1 cp no café · Seguro</p>
+      <p>✅ <strong>Vitamina D3 2000UI</strong> — 1/dia no almoço · Seguro</p>
+      <p>⚠️ <strong>Magnésio:</strong> Já toma Mg+B6 à noite — não precisa adicionar</p>
+      <p>❌ <strong>Whey Protein:</strong> Excluído por preferência</p>
+    </div>
+  </div>
+</div>
+
+<div id="tab-meds" class="tab-content">
+  <div class="card">
+    <div class="card-title">💊 Protocolo Diário — Marlene</div>
+    <div class="med-section">
+      <h3>Café da Manhã (após comer)</h3>
+      <div class="med-row">
+        <div class="med-info-box"><div class="med-name">Bromidrato de Citalopram</div><div class="med-detail">Teuto · Uso contínuo · Após café</div></div>
+        <div class="med-dose-pill">20 mg</div>
+      </div>
+      <div class="med-row">
+        <div class="med-info-box"><div class="med-name">Multivitamínico Growth</div><div class="med-detail">Suplemento · 1 comprimido</div></div>
+        <div class="med-dose-pill">1 cp</div>
+      </div>
+    </div>
+    <div class="med-section">
+      <h3>Almoço (12:00)</h3>
+      <div class="med-row">
+        <div class="med-info-box"><div class="med-name">Vitamina D3</div><div class="med-detail">Body Nutry (c/ gordura da refeição)</div></div>
+        <div class="med-dose-pill">2000 UI</div>
+      </div>
+      <div class="med-row">
+        <div class="med-info-box"><div class="med-name">Ômega 3 Ultra</div><div class="med-detail">Growth Supplements</div></div>
+        <div class="med-dose-pill">1 cápsula</div>
+      </div>
+    </div>
+    <div class="med-section">
+      <h3>Antes de Dormir (~21:00)</h3>
+      <div class="med-row">
+        <div class="med-info-box"><div class="med-name">Magnésio + B6</div><div class="med-detail">Suplemento · Uso contínuo</div></div>
+        <div class="med-dose-pill">1 cp</div>
+      </div>
+    </div>
+  </div>
+  <div class="alert alert-blue">
+    <div class="alert-icon">ℹ️</div>
+    <div><strong>Compatibilidade verificada:</strong> Os suplementos Ômega 3, Multivitamínico e Vitamina D3 são seguros com o Citalopram 20mg. Magnésio extra não é necessário pois já toma Mg+B6.</div>
+  </div>
+</div>
+
+<div id="tab-weeks" class="tab-content">
+  <div id="weekSel"></div>
+  <div class="sub-nav">
+    <button class="sub-nav-btn active" id="btnViewMenu" onclick="setSubView('menu')">Cardápio</button>
+    <button class="sub-nav-btn" id="btnViewPrep" onclick="setSubView('prep')">Meal Prep</button>
+    <button class="sub-nav-btn" id="btnViewShop" onclick="setSubView('shop')">Lista Semana</button>
+  </div>
+  <div id="view-menu"><div class="day-sel" id="daySel"></div><div id="dayContent"></div></div>
+  <div id="view-prep" style="display:none;"><div class="card" id="prepContent"></div></div>
+  <div id="view-shop" style="display:none;"><div class="card" id="shopContent"></div></div>
+</div>
+
+<div id="tab-mensal" class="tab-content">
+  <div class="card">
+    <div class="card-title">📦 Estoque Mensal (Atacado)</div>
+    <div style="font-size:13px; color:var(--text-sec); margin-bottom:12px;">Lista consolidada para 4 semanas.</div>
+
+    <div class="list-cat">PROTEÍNAS CONGELADAS</div>
+    <div class="list-item"><strong>Frango (Peito Limpo)</strong><span>2,4 kg (porções de 120g)</span></div>
+    <div class="list-item"><strong>Carne Moída (Patinho)</strong><span>1,0 kg</span></div>
+    <div class="list-item"><strong>Tilápia / Merluza (Filés)</strong><span>1,0 kg</span></div>
+    <div class="list-item"><strong>Carne Bovina (Panela/Bife)</strong><span>600g</span></div>
+    <div class="list-item"><strong>Carnes de FDS</strong><span>800g (Maminha, etc.)</span></div>
+
+    <div class="list-cat">FRESCOS & FRIOS</div>
+    <div class="list-item"><strong>Ovos</strong><span>72 un (6 dúzias)</span></div>
+    <div class="list-item"><strong>Presunto Magro</strong><span>400g</span></div>
+    <div class="list-item"><strong>Muçarela</strong><span>500g</span></div>
+    <div class="list-item"><strong>Queijo Branco/Minas</strong><span>400g</span></div>
+
+    <div class="list-cat">🥗 SALADAS & VERDURAS (semanal)</div>
+    <div class="list-item"><strong>Alface</strong><span>4 pés (1/sem)</span></div>
+    <div class="list-item"><strong>Tomate</strong><span>2 kg (500g/sem · vinagrete + salada)</span></div>
+    <div class="list-item"><strong>Cebola</strong><span>1 kg (vinagrete + tempero)</span></div>
+    <div class="list-item"><strong>Pepino</strong><span>4 un (1/sem)</span></div>
+    <div class="list-item"><strong>Cenoura</strong><span>4 un (1/sem · ralada p/ salada)</span></div>
+    <div class="list-item"><strong>Limão</strong><span>8 un (2/sem · tempero salada)</span></div>
+
+    <div class="list-cat">MERCEARIA</div>
+    <div class="list-item"><strong>Arroz Integral + Branco</strong><span>3 kg</span></div>
+    <div class="list-item"><strong>Feijão Cru</strong><span>800g</span></div>
+    <div class="list-item"><strong>Macarrão Integral</strong><span>600g</span></div>
+    <div class="list-item"><strong>Aveia em Flocos</strong><span>500g (mingau, overnight)</span></div>
+    <div class="list-item"><strong>Cuscuz (Flocos de Milho)</strong><span>500g</span></div>
+    <div class="list-item"><strong>Batata Inglesa</strong><span>1 kg</span></div>
+    <div class="list-item"><strong>Batata Doce</strong><span>800g</span></div>
+    <div class="list-item"><strong>Tapioca (Goma)</strong><span>500g</span></div>
+    <div class="list-item"><strong>Pão Integral</strong><span>2 pacotes</span></div>
+    <div class="list-item"><strong>Mel</strong><span>1 frasco 300g</span></div>
+    <div class="list-item"><strong>Café em Pó</strong><span>250g</span></div>
+
+    <div class="list-cat">LATICÍNIOS</div>
+    <div class="list-item"><strong>Leite Desnatado</strong><span>6 Litros (café diário + FDS)</span></div>
+    <div class="list-item"><strong>Iogurte Grego Natural</strong><span>30 potes × 170g</span></div>
+    <div class="list-item"><strong>Requeijão Light</strong><span>3 copos × 200g</span></div>
+
+    <div class="list-cat">🍌 FRUTAS (semanal)</div>
+    <div class="list-item"><strong>Bananas</strong><span>24 un (6/sem)</span></div>
+    <div class="list-item"><strong>Maçãs</strong><span>12 un</span></div>
+    <div class="list-item"><strong>Peras</strong><span>8 un</span></div>
+    <div class="list-item"><strong>Laranjas</strong><span>8 un</span></div>
+    <div class="list-item"><strong>Morangos</strong><span>4 bdj × 250g</span></div>
+
+    <div class="list-cat">CHÁS & OUTROS</div>
+    <div class="list-item"><strong>Chá Camomila</strong><span>1 cx (30 sachês)</span></div>
+    <div class="list-item"><strong>Chá Erva-cidreira</strong><span>1 cx (30 sachês)</span></div>
+    <div class="list-item"><strong>Amendoim Torrado s/ Sal</strong><span>200g</span></div>
+    <div class="list-item"><strong>Molho de Tomate</strong><span>1L</span></div>
+    <div class="list-item"><strong>Mostarda</strong><span>1 frasco</span></div>
+    <div class="list-item"><strong>Vinagre</strong><span>1 frasco (vinagrete)</span></div>
+
+    <div class="list-cat">💊 SUPLEMENTOS</div>
+    <div class="list-item"><strong>Multivitamínico Growth</strong><span>1 cx 30 cp</span></div>
+    <div class="list-item"><strong>Ômega 3 Ultra Growth</strong><span>1 pote 75 cáps</span></div>
+    <div class="list-item"><strong>Vitamina D3 2000UI</strong><span>1 frasco</span></div>
+  </div>
+</div>
+
+<div id="tab-taco" class="tab-content">
+  <div class="card">
+    <div class="card-title">📊 Tabela Nutricional (TACO)</div>
+    <div style="font-size:13px; color:var(--text-sec); margin-bottom:16px;">Referência TACO UNICAMP 4ª ed — porções usadas no plano.</div>
+    <div class="taco-section">
+      <div class="list-cat">🥩 PROTEÍNAS</div>
+      <div class="taco-row header"><div>Alimento</div><div>Kcal</div><div>Prot</div></div>
+      <div class="taco-row"><div>Frango Grelhado 120g</div><div class="taco-val">191</div><div class="taco-val">38g</div></div>
+      <div class="taco-row"><div>Tilápia Grelhada 120g</div><div class="taco-val">154</div><div class="taco-val">31g</div></div>
+      <div class="taco-row"><div>Merluza Assada 120g</div><div class="taco-val">146</div><div class="taco-val">32g</div></div>
+      <div class="taco-row"><div>Carne Moída 100g</div><div class="taco-val">212</div><div class="taco-val">27g</div></div>
+      <div class="taco-row"><div>Carne Panela 120g</div><div class="taco-val">233</div><div class="taco-val">38g</div></div>
+      <div class="taco-row"><div>Maminha 120g</div><div class="taco-val">184</div><div class="taco-val">37g</div></div>
+      <div class="taco-row"><div>Ovo Cozido (1un/50g)</div><div class="taco-val">73</div><div class="taco-val">7g</div></div>
+    </div>
+    <div class="taco-section">
+      <div class="list-cat">🍚 CARBOIDRATOS</div>
+      <div class="taco-row header"><div>Alimento</div><div>Kcal</div><div>Prot</div></div>
+      <div class="taco-row"><div>Arroz Integral 80g</div><div class="taco-val">99</div><div>2.1g</div></div>
+      <div class="taco-row"><div>Arroz Branco 100g</div><div class="taco-val">128</div><div>2.5g</div></div>
+      <div class="taco-row"><div>Macarrão Int. 80g</div><div class="taco-val">124</div><div>5.3g</div></div>
+      <div class="taco-row"><div>Aveia em flocos 30g</div><div class="taco-val">113</div><div>4.4g</div></div>
+      <div class="taco-row"><div>Cuscuz cozido 100g</div><div class="taco-val">112</div><div>2.5g</div></div>
+      <div class="taco-row"><div>Pão Integral (1 fatia/30g)</div><div class="taco-val">76</div><div>2.8g</div></div>
+      <div class="taco-row"><div>Batata Doce 100g</div><div class="taco-val">77</div><div>0.6g</div></div>
+      <div class="taco-row"><div>Tapioca (2 col/30g)</div><div class="taco-val">67</div><div>0g</div></div>
+      <div class="taco-row"><div>Feijão (1 concha/80g)</div><div class="taco-val">61</div><div>3.8g</div></div>
+      <div class="taco-row"><div>Lentilha (1 concha/80g)</div><div class="taco-val">74</div><div>5.0g</div></div>
+    </div>
+    <div class="taco-section">
+      <div class="list-cat">🧀 LATICÍNIOS</div>
+      <div class="taco-row header"><div>Alimento</div><div>Kcal</div><div>Prot</div></div>
+      <div class="taco-row"><div>Iogurte Grego 85g</div><div class="taco-val">82</div><div>7.7g</div></div>
+      <div class="taco-row"><div>Leite Desnat. 200ml</div><div class="taco-val">70</div><div>6.8g</div></div>
+      <div class="taco-row"><div>Muçarela 20g</div><div class="taco-val">66</div><div>4.5g</div></div>
+      <div class="taco-row"><div>Queijo Minas 20g</div><div class="taco-val">53</div><div>3.5g</div></div>
+      <div class="taco-row"><div>Mel 10g (1 col. chá)</div><div class="taco-val">31</div><div>0g</div></div>
+    </div>
+    <div class="taco-section">
+      <div class="list-cat">🍌 FRUTAS</div>
+      <div class="taco-row header"><div>Alimento</div><div>Kcal</div><div>Prot</div></div>
+      <div class="taco-row"><div>Banana Prata (1un/75g)</div><div class="taco-val">74</div><div>0.8g</div></div>
+      <div class="taco-row"><div>Maçã (1un/130g)</div><div class="taco-val">73</div><div>0.5g</div></div>
+      <div class="taco-row"><div>Pera (1un/130g)</div><div class="taco-val">69</div><div>1g</div></div>
+      <div class="taco-row"><div>Laranja (1un/150g)</div><div class="taco-val">56</div><div>1.5g</div></div>
+      <div class="taco-row"><div>Morango 100g</div><div style="color:var(--primary-dark);font-weight:bold;">30</div><div>0.9g</div></div>
+    </div>
+    <div class="taco-section">
+      <div class="list-cat">🥗 SALADAS (livre)</div>
+      <div class="taco-row header"><div>Alimento</div><div>Kcal</div><div>Prot</div></div>
+      <div class="taco-row"><div>Alface 50g (porção)</div><div style="color:#059669;font-weight:bold;">7</div><div>0.5g</div></div>
+      <div class="taco-row"><div>Tomate 80g (½ un)</div><div style="color:#059669;font-weight:bold;">12</div><div>0.6g</div></div>
+      <div class="taco-row"><div>Pepino 60g (½ un)</div><div style="color:#059669;font-weight:bold;">6</div><div>0.4g</div></div>
+      <div class="taco-row"><div>Cenoura ralada 40g</div><div style="color:#059669;font-weight:bold;">14</div><div>0.3g</div></div>
+      <div class="taco-row"><div>Vinagrete 50g</div><div class="taco-val">25</div><div>0.4g</div></div>
+    </div>
+  </div>
+</div>
+
+<nav class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('resumo')">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+    Resumo
+  </button>
+  <button class="tab-btn" onclick="showTab('meds')">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+    Meds
+  </button>
+  <button class="tab-btn" onclick="showTab('weeks')">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+    Semanas
+  </button>
+  <button class="tab-btn" onclick="showTab('mensal')">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+    Compras
+  </button>
+  <button class="tab-btn" onclick="showTab('taco')">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+    TACO
+  </button>
+</nav>
+
+<script>
+const SALAD_NOTE = "🥗 + Salada verde à vontade (alface, tomate, pepino, cenoura) c/ limão ou vinagrete (~30 kcal — não contabilizada)";
+
+const WEEKS = {
+  "A": {
+    "info": "Semanas 1, 5, 9, 13, 17, 21, 25",
+    "prep": [
+      { item: "Arroz Integral (400g)", modo: "Cozinhar com alho e sal", dest: "3 col. sopa (80g) cada dia útil" },
+      { item: "Macarrão Integral (160g)", modo: "Cozinhar al dente", dest: "80g Jan Seg · 80g Jan Qui" },
+      { item: "Batata-doce (200g)", modo: "Assar ou cozinhar", dest: "100g Jan Ter · 100g Jan Sex" },
+      { item: "Frango (480g)", modo: "120g Grelhado; 120g Desfiado; 120g Mostarda; 120g Empanado", dest: "Distribuir" },
+      { item: "Carne Moída (200g)", modo: "100g Refogada; 100g Bolonhesa", dest: "100g (Jan Seg); 100g (Alm Sex)" },
+      { item: "Tilápia (240g)", modo: "Grelhar com limão", dest: "120g (Alm Ter); 120g (Alm Qua)" },
+      { item: "Carne de Panela (120g)", modo: "Cozinhar na pressão", dest: "120g (Alm Qui)" },
+      { item: "Vinagrete (300g)", modo: "Tomate+cebola+vinagre+sal+coentro", dest: "~50g por refeição — 6 porções" },
+      { item: "Salada Verde", modo: "Lavar e guardar: alface+tomate+pepino+cenoura", dest: "Porção livre no almoço e jantar" },
+      { item: "Molho de Tomate (250ml)", modo: "Caseiro ou pronto", dest: "~50ml por marmita" }
+    ],
+    "shop": [
+      { cat: "PROTEÍNAS", text: "Frango (500g) · Carne moída (200g) · Tilápia (250g) · Carne Panela (120g) · Maminha FDS (120g) · Ovos (18 un) · Presunto (30g)" },
+      { cat: "SALADAS & VERDURAS", text: "Alface (1 pé) · Tomate (500g) · Cebola (250g) · Pepino (1 un) · Cenoura (1 un) · Limão (2 un)" },
+      { cat: "CARBOIDRATOS", text: "Arroz int. (400g) · Arroz branco (100g) · Macarrão int. (160g) · Batata-doce (200g) · Aveia flocos (120g) · Cuscuz (100g) · Pão integral (1 pct) · Tapioca (90g) · Feijão (80g)" },
+      { cat: "LATICÍNIOS", text: "Iogurte grego (8 un) · Leite desnatado (2L) · Muçarela (80g) · Queijo minas (60g) · Requeijão light (30g)" },
+      { cat: "FRUTAS", text: "Banana (6 un) · Maçã (3 un) · Pera (2 un) · Laranja (2 un) · Morango (250g)" },
+      { cat: "OUTROS", text: "Mel (50g) · Café em pó · Chá camomila · Amendoim (40g) · Vinagre" }
+    ],
+    "days": {
+      "Segunda": [
+        { "time":"07:00","name":"Café","food":"☕ Café c/ leite (100ml desnat.) + mingau de aveia (30g aveia + 100ml leite + 10g mel + banana peq. 60g)","kcal":318,"prot":14,"sub1":"Cuscuz (80g cozido) + 1 ovo + 20g queijo + café c/ leite ≈310 kcal","sub2":"Tapioca 30g + 1 ovo + 20g muçarela + café c/ leite + banana ≈300 kcal" },
+        { "time":"10:00","name":"Lanche","food":"1 maçã média (130g)","kcal":73,"prot":1,"sub1":"1 pera (130g) ≈69 kcal","sub2":"1 laranja (150g) ≈56 kcal" },
+        { "time":"12:00","name":"Almoço","food":"MARMITA: 120g frango grelhado + 80g arroz integral + 50ml molho tomate + salada verde à vontade c/ vinagrete","kcal":320,"prot":41,"sub1":"120g tilápia + 80g arroz + 1 ovo + salada ≈318 kcal","sub2":"100g carne moída + 80g macarrão + 50ml molho + salada ≈330 kcal" },
+        { "time":"15:00","name":"Lanche","food":"85g (½ pote) iogurte grego + 50g (4 un.) morango","kcal":97,"prot":8,"sub1":"1 banana (75g) + 10g amendoim ≈135 kcal","sub2":"1 fatia pão + 15g requeijão light ≈97 kcal" },
+        { "time":"19:00","name":"Jantar","food":"MARMITA: 100g carne moída refogada + 80g macarrão int. + 50ml molho + salada verde c/ limão","kcal":330,"prot":25,"sub1":"Omelete (2 ovos+20g queijo+20g presunto) + salada ≈307 kcal","sub2":"100g frango + 100g batata-doce + salada ≈237 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de camomila + 85g iogurte grego","kcal":82,"prot":8,"sub1":"Chá de erva-cidreira + 1 maçã (130g) ≈73 kcal","sub2":"200ml leite morno + 10g mel ≈101 kcal" }
+      ],
+      "Terça": [
+        { "time":"07:00","name":"Café","food":"☕ Café c/ leite (100ml) + cuscuz (80g cozido) + 1 ovo mexido + 20g queijo minas","kcal":310,"prot":18,"sub1":"Mingau aveia (30g aveia+100ml leite+10g mel+banana 60g)+café ≈318 kcal","sub2":"Omelete (1 ovo+20g queijo+20g presunto)+1 fatia pão+café ≈265 kcal" },
+        { "time":"10:00","name":"Lanche","food":"1 banana média (75g) + 10g amendoim","kcal":135,"prot":3,"sub1":"85g iogurte grego + morango 50g ≈97 kcal","sub2":"1 pera (130g) ≈69 kcal" },
+        { "time":"12:00","name":"Almoço","food":"MARMITA: 120g tilápia grelhada + 80g arroz int. + 1 ovo cozido + salada verde c/ vinagrete","kcal":312,"prot":39,"sub1":"120g frango desfiado + 80g arroz + 50ml molho + salada ≈320 kcal","sub2":"120g carne panela + 80g arroz + 80g lentilha + salada ≈370 kcal" },
+        { "time":"15:00","name":"Lanche","food":"1 fatia pão integral + 15g requeijão light","kcal":97,"prot":4,"sub1":"85g iogurte grego + morango 50g ≈97 kcal","sub2":"1 maçã (130g) ≈73 kcal" },
+        { "time":"19:00","name":"Jantar","food":"MARMITA: 100g frango desfiado + 100g batata-doce + 50ml molho + salada verde","kcal":250,"prot":33,"sub1":"100g tilápia + 80g macarrão + salada ≈265 kcal","sub2":"Omelete (2 ovos+20g queijo) + salada + 1 fatia pão ≈279 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de erva-cidreira + 1 pera (130g)","kcal":69,"prot":1,"sub1":"85g iogurte grego ≈82 kcal","sub2":"Chá de camomila + 1 laranja ≈56 kcal" }
+      ],
+      "Quarta": [
+        { "time":"07:00","name":"Café","food":"☕ Café c/ leite (100ml) + tapioca 30g + 1 ovo + 20g muçarela + banana peq. (60g)","kcal":278,"prot":12,"sub1":"Cuscuz 80g + 1 ovo + 20g queijo + café ≈310 kcal","sub2":"Mingau aveia (30g+100ml leite+mel)+morango 60g+café ≈288 kcal" },
+        { "time":"10:00","name":"Lanche","food":"85g iogurte grego + 50g morango","kcal":97,"prot":8,"sub1":"1 banana (75g) + 10g amendoim ≈135 kcal","sub2":"1 maçã (130g) ≈73 kcal" },
+        { "time":"12:00","name":"Almoço","food":"MARMITA: 120g tilápia grelhada + 80g arroz int. + 50ml molho caseiro + salada verde c/ vinagrete","kcal":285,"prot":35,"sub1":"120g frango + 80g arroz + 80g feijão + salada ≈332 kcal","sub2":"100g carne moída + 80g macarrão + 50ml molho + salada ≈330 kcal" },
+        { "time":"15:00","name":"Lanche","food":"1 pera (130g)","kcal":69,"prot":1,"sub1":"1 fatia pão + 15g requeijão ≈97 kcal","sub2":"85g iogurte grego ≈82 kcal" },
+        { "time":"19:00","name":"Jantar","food":"Omelete (2 ovos + 20g muçarela + 20g presunto) + salada verde c/ tomate + 1 fatia pão","kcal":320,"prot":22,"sub1":"100g frango + 80g macarrão + salada ≈265 kcal","sub2":"100g tilápia + 100g batata-doce + salada ≈225 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de hortelã + 85g iogurte grego","kcal":82,"prot":8,"sub1":"Chá + 1 maçã (130g) ≈73 kcal","sub2":"200ml leite morno + canela ≈70 kcal" }
+      ],
+      "Quinta": [
+        { "time":"07:00","name":"Café","food":"☕ Café c/ leite (100ml) + 1 ovo cozido + 1 fatia pão + 15g requeijão + laranja peq. (100g)","kcal":242,"prot":14,"sub1":"Cuscuz 80g + 1 ovo + 20g queijo + café ≈310 kcal","sub2":"Tapioca 30g + 1 ovo + 20g queijo + banana peq. + café ≈300 kcal" },
+        { "time":"10:00","name":"Lanche","food":"1 banana média (75g)","kcal":74,"prot":1,"sub1":"1 maçã (130g) ≈73 kcal","sub2":"85g iogurte grego + morango 50g ≈97 kcal" },
+        { "time":"12:00","name":"Almoço","food":"MARMITA: 120g carne de panela + 80g arroz int. + 80g lentilha + salada verde c/ vinagrete","kcal":383,"prot":43,"sub1":"120g frango c/ mostarda + 80g arroz + salada ≈308 kcal","sub2":"120g tilápia + 80g macarrão + 1 ovo + salada ≈318 kcal" },
+        { "time":"15:00","name":"Lanche","food":"85g iogurte grego + 10g amendoim","kcal":143,"prot":10,"sub1":"1 pera (130g) + 10g amendoim ≈130 kcal","sub2":"1 fatia pão + 15g requeijão ≈97 kcal" },
+        { "time":"19:00","name":"Jantar","food":"MARMITA: 100g frango c/ mostarda + 80g macarrão int. + 50ml molho + salada verde","kcal":282,"prot":32,"sub1":"100g tilápia + 100g batata-doce + salada ≈225 kcal","sub2":"Omelete (2 ovos+20g queijo) + salada + 1 fatia pão ≈279 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de camomila + 1 maçã (130g)","kcal":73,"prot":1,"sub1":"85g iogurte grego ≈82 kcal","sub2":"Chá + 1 laranja ≈56 kcal" }
+      ],
+      "Sexta": [
+        { "time":"07:00","name":"Café","food":"☕ Café c/ leite (100ml) + crepioca (1 ovo + 30g tapioca + 20g muçarela) + morango (60g)","kcal":260,"prot":12,"sub1":"Cuscuz 80g + 1 ovo + 20g queijo + café ≈310 kcal","sub2":"Mingau aveia (30g+100ml leite+mel+banana 60g)+café ≈318 kcal" },
+        { "time":"10:00","name":"Lanche","food":"1 pera (130g)","kcal":69,"prot":1,"sub1":"1 banana (75g) ≈74 kcal","sub2":"85g iogurte grego ≈82 kcal" },
+        { "time":"12:00","name":"Almoço","food":"MARMITA: 100g carne moída bolonhesa + 80g arroz int. + 1 ovo cozido + salada verde c/ vinagrete","kcal":358,"prot":29,"sub1":"120g frango + 80g arroz + 50ml molho + salada ≈320 kcal","sub2":"120g tilápia + 80g arroz + 80g feijão + salada ≈312 kcal" },
+        { "time":"15:00","name":"Lanche","food":"85g iogurte grego + 50g morango","kcal":97,"prot":8,"sub1":"1 maçã (130g) + 10g amendoim ≈134 kcal","sub2":"1 fatia pão + 15g requeijão ≈97 kcal" },
+        { "time":"19:00","name":"Jantar","food":"MARMITA: 120g frango empanado forno + 100g batata-doce + salada verde c/ limão","kcal":295,"prot":33,"sub1":"100g carne moída + 80g macarrão + salada ≈320 kcal","sub2":"Omelete (2 ovos+20g queijo+20g presunto) + salada + 1 fatia pão ≈307 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de erva-cidreira + 85g iogurte grego","kcal":82,"prot":8,"sub1":"Chá + 1 pera (130g) ≈69 kcal","sub2":"200ml leite morno + canela ≈70 kcal" }
+      ],
+      "Sábado": [
+        { "time":"08:00","name":"Café","food":"☕ Café c/ leite (200ml) + tapioca 30g + 20g muçarela + 20g presunto + banana peq. (60g)","kcal":343,"prot":15,"sub1":"French toast (1 fatia pão+1 ovo)+200ml leite+banana ≈290 kcal","sub2":"Mingau aveia (30g+200ml leite+mel+banana)+café ≈350 kcal" },
+        { "time":"10:00","name":"Lanche","food":"Vitamina: banana (75g) + 200ml leite","kcal":144,"prot":8,"sub1":"Vitamina: 100g morango + 200ml leite ≈100 kcal","sub2":"85g iogurte grego + morango ≈97 kcal" },
+        { "time":"12:00","name":"Almoço Fixo","food":"100g arroz branco + 80g feijão + 2 ovos grelhados + salada verde c/ vinagrete","kcal":348,"prot":21,"sub1":"100g arroz + 80g lentilha + 2 ovos + salada ≈361 kcal","sub2":"Sem substituição" },
+        { "time":"15:00","name":"Lanche","food":"Crepioca lanche: 1 ovo + 30g tapioca + 20g muçarela","kcal":207,"prot":10,"sub1":"Panqueca (1 ovo+60g banana+20g far. arroz) ≈190 kcal","sub2":"85g iogurte grego + banana peq. (60g) ≈141 kcal" },
+        { "time":"19:00","name":"Jantar","food":"120g maminha grelhada + 80g arroz branco + salada verde c/ vinagrete","kcal":281,"prot":39,"sub1":"100g frango + 80g macarrão + 20g queijo + salada ≈296 kcal","sub2":"Omelete (2 ovos+20g queijo+20g presunto) + salada + 1 fatia pão ≈307 kcal" },
+        { "time":"21:00","name":"Ceia","food":"200ml leite morno + canela","kcal":70,"prot":7,"sub1":"85g iogurte grego ≈82 kcal","sub2":"Chá + nenhum (opcional)" }
+      ],
+      "Domingo": [
+        { "time":"08:00","name":"Café","food":"☕ Café c/ leite (200ml) + French toast (1 fatia 30g pão + 1 ovo) + canela + 50g banana","kcal":290,"prot":14,"sub1":"Mingau aveia (30g+200ml leite+mel+morango 60g)+café ≈320 kcal","sub2":"Cuscuz 80g + 1 ovo + 20g queijo + 200ml leite ≈330 kcal" },
+        { "time":"10:00","name":"Lanche","food":"Vitamina: 100g morango + 200ml leite","kcal":100,"prot":7,"sub1":"Vitamina: banana (75g) + 200ml leite ≈144 kcal","sub2":"85g iogurte grego + morango ≈97 kcal" },
+        { "time":"12:00","name":"Almoço","food":"120g frango assado + 80g arroz int. + 80g purê batata + salada verde c/ vinagrete","kcal":339,"prot":40,"sub1":"120g maminha + 80g arroz + 80g purê + salada ≈300 kcal","sub2":"120g tilápia + 80g arroz + 80g lentilha + salada ≈312 kcal" },
+        { "time":"15:00","name":"Lanche","food":"Panqueca: 1 ovo + 60g banana + 20g far. arroz","kcal":190,"prot":7,"sub1":"Crepioca (1 ovo+30g tapioca+20g muçarela) ≈207 kcal","sub2":"85g iogurte grego + banana peq. (60g) ≈141 kcal" },
+        { "time":"19:00","name":"Jantar","food":"Sopa: 100g frango + 80g batata + 30g creme leite light + salada verde","kcal":233,"prot":30,"sub1":"Canja: 100g frango + 80g arroz ≈242 kcal","sub2":"100g tilápia + 100g batata-doce + salada ≈225 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de camomila + 200ml leite morno","kcal":70,"prot":7,"sub1":"85g iogurte grego ≈82 kcal","sub2":"Chá + nenhum (opcional)" }
+      ]
+    }
+  },
+  "B": {
+    "info": "Semanas 2, 6, 10, 14, 18, 22, 26",
+    "prep": [
+      { item: "Arroz Integral (400g)", modo: "Cozinhar simples", dest: "3 col. sopa (80g): cada dia útil" },
+      { item: "Macarrão Integral (80g)", modo: "Cozinhar al dente", dest: "80g Jan Ter" },
+      { item: "Purê Batata (160g)", modo: "Amassar com pouca manteiga", dest: "80g (Jan Seg); 80g (Jan Sex)" },
+      { item: "Frango (460g)", modo: "120g Shoyu; 100g Estrogonofe; 120g Mostarda; 120g Desfiado", dest: "Distribuir" },
+      { item: "Tilápia (240g)", modo: "120g Empanada forno; 120g Grelhada", dest: "120g (Alm Ter); 120g (Alm Sex)" },
+      { item: "Carne Moída (200g)", modo: "100g Refogada; 100g Hambúrguer", dest: "100g (Jan Seg); 100g (Jan Qui)" },
+      { item: "Carne de Panela (120g)", modo: "Cozinhar na pressão", dest: "120g (Alm Qua)" },
+      { item: "Vinagrete (300g)", modo: "Tomate+cebola+vinagre+sal", dest: "Almoço e jantar" },
+      { item: "Salada Verde", modo: "Lavar e guardar", dest: "Porção livre" },
+      { item: "Molho de Tomate (250ml)", modo: "Caseiro ou pronto", dest: "~50ml por porção" }
+    ],
+    "shop": [
+      { cat: "PROTEÍNAS", text: "Frango (460g) · Carne moída (200g) · Tilápia (250g) · Carne Panela (120g) · Frango Sáb/Dom (220g) · Ovos (18 un) · Presunto (30g)" },
+      { cat: "SALADAS & VERDURAS", text: "Alface (1 pé) · Tomate (500g) · Cebola (250g) · Pepino (1 un) · Cenoura (1 un) · Limão (2 un)" },
+      { cat: "CARBOIDRATOS", text: "Arroz int. (400g) · Arroz branco (100g) · Macarrão int. (80g) · Batata (160g) · Aveia flocos (120g) · Cuscuz (100g) · Pão integral (1 pct) · Tapioca (90g)" },
+      { cat: "LATICÍNIOS", text: "Iogurte grego (8 un) · Leite desnatado (2L) · Muçarela (80g) · Queijo minas (40g) · Requeijão light (30g) · Creme leite light (30g)" },
+      { cat: "FRUTAS", text: "Banana (6 un) · Maçã (3 un) · Pera (2 un) · Laranja (2 un) · Morango (250g)" },
+      { cat: "OUTROS", text: "Mel · Café · Chá camomila · Amendoim (40g) · Shoyu · Vinagre" }
+    ],
+    "days": {
+      "Segunda": [
+        { "time":"07:00","name":"Café","food":"☕ Café c/ leite (100ml) + cuscuz (80g cozido) + 1 ovo + 20g muçarela + morango (60g)","kcal":318,"prot":14,"sub1":"Mingau aveia (30g+100ml leite+mel+banana 60g)+café ≈318 kcal","sub2":"Tapioca 30g + 1 ovo + 20g queijo + banana + café ≈300 kcal" },
+        { "time":"10:00","name":"Lanche","food":"1 maçã (130g) + 10g amendoim","kcal":134,"prot":3,"sub1":"85g iogurte grego + morango 50g ≈97 kcal","sub2":"1 banana (75g) ≈74 kcal" },
+        { "time":"12:00","name":"Almoço","food":"MARMITA: 120g frango ao shoyu + 80g arroz int. + 1 ovo cozido + salada verde c/ vinagrete","kcal":377,"prot":45,"sub1":"120g tilápia + 80g arroz + 50ml molho + salada ≈285 kcal","sub2":"120g frango desfiado + 80g arroz + 80g lentilha + salada ≈351 kcal" },
+        { "time":"15:00","name":"Lanche","food":"1 pera (130g)","kcal":69,"prot":1,"sub1":"85g iogurte grego + morango ≈97 kcal","sub2":"1 fatia pão + 15g requeijão ≈97 kcal" },
+        { "time":"19:00","name":"Jantar","food":"MARMITA: 100g carne moída + 80g purê batata + 20g muçarela gratinada + salada verde","kcal":318,"prot":28,"sub1":"Omelete (2 ovos+20g queijo+20g presunto)+salada+pão ≈307 kcal","sub2":"100g frango+80g macarrão+salada ≈265 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de camomila + 85g iogurte grego + ½ banana (50g)","kcal":131,"prot":8,"sub1":"Chá + 85g iogurte ≈82 kcal","sub2":"200ml leite morno + canela ≈70 kcal" }
+      ],
+      "Terça": [
+        { "time":"07:00","name":"Café","food":"☕ Café c/ leite (100ml) + mingau aveia (30g aveia + 100ml leite + 10g mel + banana peq. 60g)","kcal":318,"prot":14,"sub1":"Cuscuz 80g + 1 ovo + 20g queijo + café ≈310 kcal","sub2":"Omelete (1 ovo+20g queijo+20g presunto)+1 fatia pão+café ≈265 kcal" },
+        { "time":"10:00","name":"Lanche","food":"85g iogurte grego + 50g banana","kcal":111,"prot":8,"sub1":"1 pera (130g) + 10g amendoim ≈130 kcal","sub2":"1 laranja (150g) ≈56 kcal" },
+        { "time":"12:00","name":"Almoço","food":"MARMITA: 120g tilápia empanada forno + 80g arroz int. + 50ml molho + salada verde c/ vinagrete","kcal":322,"prot":35,"sub1":"120g frango + 80g arroz + 50ml molho + salada ≈320 kcal","sub2":"100g carne moída + 80g macarrão + 50ml molho + salada ≈330 kcal" },
+        { "time":"15:00","name":"Lanche","food":"1 maçã (130g)","kcal":73,"prot":1,"sub1":"1 fatia pão + 15g requeijão ≈97 kcal","sub2":"85g iogurte grego ≈82 kcal" },
+        { "time":"19:00","name":"Jantar","food":"MARMITA: Estrogonofe light (100g frango + molho tomate + 30g creme leite) + 80g arroz + salada","kcal":323,"prot":33,"sub1":"100g frango + 100g batata-doce + salada ≈250 kcal","sub2":"100g tilápia + 80g macarrão + salada ≈265 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de erva-cidreira + 1 pera (130g)","kcal":69,"prot":1,"sub1":"85g iogurte grego ≈82 kcal","sub2":"Chá + 1 maçã ≈73 kcal" }
+      ],
+      "Quarta": [
+        { "time":"07:00","name":"Café","food":"☕ Café c/ leite (100ml) + omelete (1 ovo + 20g muçarela + 20g presunto) + 1 fatia pão","kcal":265,"prot":17,"sub1":"Cuscuz 80g + 1 ovo + 20g queijo + café ≈310 kcal","sub2":"Mingau aveia (30g+100ml leite+mel+morango 60g)+café ≈288 kcal" },
+        { "time":"10:00","name":"Lanche","food":"1 banana (75g) + 10g amendoim","kcal":135,"prot":3,"sub1":"85g iogurte grego + morango 50g ≈97 kcal","sub2":"1 maçã (130g) ≈73 kcal" },
+        { "time":"12:00","name":"Almoço","food":"MARMITA: 120g carne de panela + 80g arroz int. + 80g purê batata-doce + salada verde c/ vinagrete","kcal":363,"prot":41,"sub1":"120g frango + 80g arroz + 80g feijão + salada ≈332 kcal","sub2":"120g tilápia + 80g arroz + 1 ovo + salada ≈312 kcal" },
+        { "time":"15:00","name":"Lanche","food":"85g iogurte grego + 50g morango","kcal":97,"prot":8,"sub1":"1 pera (130g) ≈69 kcal","sub2":"1 fatia pão + 15g requeijão ≈97 kcal" },
+        { "time":"19:00","name":"Jantar","food":"Omelete (2 ovos + 20g muçarela + 20g presunto) + salada verde c/ tomate + 1 fatia pão","kcal":320,"prot":22,"sub1":"100g frango + 80g macarrão + salada ≈265 kcal","sub2":"100g carne moída + 80g purê + salada ≈254 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de hortelã + 85g iogurte grego","kcal":82,"prot":8,"sub1":"Chá + 1 maçã ≈73 kcal","sub2":"200ml leite morno ≈70 kcal" }
+      ],
+      "Quinta": [
+        { "time":"07:00","name":"Café","food":"☕ Café c/ leite (100ml) + crepioca (1 ovo + 30g tapioca + 20g muçarela) + laranja peq. (100g)","kcal":262,"prot":12,"sub1":"Cuscuz 80g + 1 ovo + 20g queijo + café ≈310 kcal","sub2":"Mingau aveia (30g+100ml leite+mel+banana 60g)+café ≈318 kcal" },
+        { "time":"10:00","name":"Lanche","food":"1 maçã (130g)","kcal":73,"prot":1,"sub1":"1 banana (75g) ≈74 kcal","sub2":"85g iogurte grego ≈82 kcal" },
+        { "time":"12:00","name":"Almoço","food":"MARMITA: 120g frango c/ mostarda + 80g arroz int. + 80g lentilha + salada verde c/ vinagrete","kcal":364,"prot":43,"sub1":"120g tilápia + 80g macarrão + 1 ovo + salada ≈318 kcal","sub2":"120g carne panela + 80g arroz + 50ml molho + salada ≈343 kcal" },
+        { "time":"15:00","name":"Lanche","food":"85g iogurte grego + 1 pera (130g)","kcal":151,"prot":9,"sub1":"1 fatia pão + 15g requeijão ≈97 kcal","sub2":"1 banana (75g) + 10g amendoim ≈135 kcal" },
+        { "time":"19:00","name":"Jantar","food":"Hambúrguer: 100g carne moída + 1 pão integral (50g) + 20g muçarela + salada verde","kcal":393,"prot":30,"sub1":"100g carne moída + 80g macarrão + salada ≈320 kcal","sub2":"100g frango + 100g batata-doce + salada ≈250 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de camomila + 1 laranja (150g)","kcal":56,"prot":2,"sub1":"85g iogurte grego ≈82 kcal","sub2":"200ml leite morno ≈70 kcal" }
+      ],
+      "Sexta": [
+        { "time":"07:00","name":"Café","food":"☕ Café c/ leite (100ml) + 1 ovo cozido + 1 fatia pão + 15g requeijão + laranja peq. (100g)","kcal":242,"prot":14,"sub1":"Cuscuz 80g + 1 ovo + 20g queijo + café ≈310 kcal","sub2":"Mingau aveia (30g+100ml leite+mel+morango 60g)+café ≈288 kcal" },
+        { "time":"10:00","name":"Lanche","food":"85g iogurte grego + 50g morango","kcal":97,"prot":8,"sub1":"1 banana (75g) + 10g amendoim ≈135 kcal","sub2":"1 pera (130g) ≈69 kcal" },
+        { "time":"12:00","name":"Almoço","food":"MARMITA: 120g tilápia grelhada + 80g arroz int. + 1 ovo cozido + salada verde c/ vinagrete","kcal":312,"prot":39,"sub1":"120g frango + 80g arroz + 50ml molho + salada ≈320 kcal","sub2":"100g carne moída + 80g macarrão + 50ml molho + salada ≈330 kcal" },
+        { "time":"15:00","name":"Lanche","food":"1 maçã (130g)","kcal":73,"prot":1,"sub1":"1 fatia pão + 15g requeijão ≈97 kcal","sub2":"85g iogurte grego ≈82 kcal" },
+        { "time":"19:00","name":"Jantar","food":"MARMITA: Escondidinho (80g purê batata + 100g frango + 20g muçarela) + salada verde","kcal":278,"prot":34,"sub1":"100g tilápia + 80g macarrão + salada ≈265 kcal","sub2":"Omelete (2 ovos+20g queijo)+salada+pão ≈279 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de erva-cidreira + 85g iogurte grego","kcal":82,"prot":8,"sub1":"Chá + 1 pera ≈69 kcal","sub2":"200ml leite morno ≈70 kcal" }
+      ],
+      "Sábado": [
+        { "time":"08:00","name":"Café","food":"☕ Café c/ leite (200ml) + French toast (1 fatia pão + 1 ovo) + canela + 50g banana","kcal":290,"prot":14,"sub1":"Mingau aveia (30g+200ml leite+mel+banana)+café ≈350 kcal","sub2":"Cuscuz 80g + 1 ovo + 20g queijo + 200ml leite ≈330 kcal" },
+        { "time":"10:00","name":"Lanche","food":"Vitamina: banana (75g) + 200ml leite","kcal":144,"prot":8,"sub1":"Vitamina: 100g morango + 200ml leite ≈100 kcal","sub2":"85g iogurte grego + morango ≈97 kcal" },
+        { "time":"12:00","name":"Almoço Fixo","food":"100g arroz branco + 80g feijão + 2 ovos grelhados + salada verde c/ vinagrete","kcal":348,"prot":21,"sub1":"100g arroz + 80g lentilha + 2 ovos + salada ≈361 kcal","sub2":"Sem substituição" },
+        { "time":"15:00","name":"Lanche","food":"Panqueca: 1 ovo + 60g banana + 20g far. arroz","kcal":190,"prot":7,"sub1":"Crepioca (1 ovo+30g tapioca+20g muçarela) ≈207 kcal","sub2":"85g iogurte + banana peq. ≈141 kcal" },
+        { "time":"19:00","name":"Jantar","food":"120g frango desfiado + 80g macarrão int. + 20g muçarela + salada verde","kcal":323,"prot":36,"sub1":"Escondidinho (80g purê+100g frango+20g queijo)+salada ≈278 kcal","sub2":"100g tilápia + 100g batata-doce + salada ≈225 kcal" },
+        { "time":"21:00","name":"Ceia","food":"200ml leite morno + canela","kcal":70,"prot":7,"sub1":"85g iogurte grego ≈82 kcal","sub2":"Chá camomila (opcional)" }
+      ],
+      "Domingo": [
+        { "time":"08:00","name":"Café","food":"☕ Café c/ leite (200ml) + tapioca 30g + 1 ovo + 20g muçarela + 20g presunto","kcal":330,"prot":16,"sub1":"French toast (1 fatia pão+1 ovo)+200ml leite+banana ≈290 kcal","sub2":"Mingau aveia (30g+200ml leite+mel+morango)+café ≈320 kcal" },
+        { "time":"10:00","name":"Lanche","food":"Vitamina: 100g morango + 200ml leite","kcal":100,"prot":7,"sub1":"Vitamina: banana (75g) + 200ml leite ≈144 kcal","sub2":"85g iogurte + morango ≈97 kcal" },
+        { "time":"12:00","name":"Almoço","food":"120g maminha grelhada + 80g arroz int. + 80g purê batata + salada verde c/ vinagrete","kcal":313,"prot":39,"sub1":"120g frango assado + 80g arroz + 80g purê + salada ≈339 kcal","sub2":"120g tilápia + 80g arroz + 80g lentilha + salada ≈312 kcal" },
+        { "time":"15:00","name":"Lanche","food":"Panqueca: 1 ovo + 60g banana + 20g far. arroz","kcal":190,"prot":7,"sub1":"Crepioca (1 ovo+30g tapioca+20g queijo) ≈207 kcal","sub2":"85g iogurte + banana peq. ≈141 kcal" },
+        { "time":"19:00","name":"Jantar","food":"Sopa: 100g frango + 80g macarrão + 80g batata + salada verde","kcal":293,"prot":30,"sub1":"Canja: 100g frango + 80g arroz ≈242 kcal","sub2":"Escondidinho: 80g purê+100g carne moída+20g queijo ≈305 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de camomila + 200ml leite morno","kcal":70,"prot":7,"sub1":"85g iogurte grego ≈82 kcal","sub2":"Chá (opcional)" }
+      ]
+    }
+  },
+  "C": {
+    "info": "Semanas 3, 7, 11, 15, 19, 23",
+    "prep": [
+      { item: "Arroz Integral (400g)", modo: "Cozinhar com ervas", dest: "3 col. (80g) cada dia útil" },
+      { item: "Macarrão Integral (80g)", modo: "Al dente", dest: "80g Jan Ter" },
+      { item: "Frango (400g)", modo: "120g Xadrez; 100g Yakisoba; 100g Risoto; 80g Grelhado", dest: "Distribuir" },
+      { item: "Bife Acebolado (120g)", modo: "Grelhar com cebolas", dest: "120g (Alm Qua)" },
+      { item: "Carne Moída (200g)", modo: "100g Bolonhesa; 100g Refogada", dest: "100g (Jan Qui); 100g (Jan Sex)" },
+      { item: "Tilápia (120g)", modo: "Crosta far. arroz", dest: "120g (Alm Sex)" },
+      { item: "Merluza (120g)", modo: "Assada", dest: "120g (Alm Ter)" },
+      { item: "Vinagrete + Salada Verde", modo: "Preparar e embalar", dest: "Livre no almoço e jantar" }
+    ],
+    "shop": [
+      { cat: "PROTEÍNAS", text: "Frango (400g) · Bife (120g) · Carne moída (200g) · Merluza (120g) · Tilápia (120g) · Maminha Dom (120g) · Ovos (18 un)" },
+      { cat: "SALADAS", text: "Alface (1 pé) · Tomate (500g) · Cebola (250g) · Pepino (1 un) · Cenoura (1 un) · Limão (2 un)" },
+      { cat: "CARBOIDRATOS", text: "Arroz int. (400g) · Arroz branco (100g) · Macarrão (80g) · Aveia (120g) · Cuscuz (100g) · Batata-doce (100g) · Pão (1 pct) · Tapioca (90g)" },
+      { cat: "LATICÍNIOS", text: "Iogurte grego (8 un) · Leite desnatado (2L) · Muçarela (80g) · Queijo minas (40g) · Requeijão light (30g) · Parmesão (15g)" },
+      { cat: "FRUTAS", text: "Banana (6 un) · Maçã (3 un) · Pera (2 un) · Laranja (2 un) · Morango (250g)" },
+      { cat: "OUTROS", text: "Mel · Café · Chá erva-cidreira · Amendoim (40g) · Shoyu · Vinagre" }
+    ],
+    "days": {
+      "Segunda": [
+        { "time":"07:00","name":"Café","food":"☕ Café c/ leite (100ml) + mingau aveia (30g aveia + 100ml leite + 10g mel + morango 60g)","kcal":288,"prot":12,"sub1":"Cuscuz 80g + 1 ovo + 20g queijo + café ≈310 kcal","sub2":"Tapioca 30g + 1 ovo + 20g muçarela + banana + café ≈300 kcal" },
+        { "time":"10:00","name":"Lanche","food":"1 pera (130g)","kcal":69,"prot":1,"sub1":"1 banana (75g) ≈74 kcal","sub2":"85g iogurte grego + morango ≈97 kcal" },
+        { "time":"12:00","name":"Almoço","food":"MARMITA: 120g frango xadrez (15ml shoyu + 10g amendoim) + 80g arroz int. + salada verde c/ vinagrete","kcal":365,"prot":41,"sub1":"120g tilápia + 80g arroz + 1 ovo + salada ≈312 kcal","sub2":"100g carne moída + 80g macarrão + 50ml molho + salada ≈330 kcal" },
+        { "time":"15:00","name":"Lanche","food":"1 maçã (130g)","kcal":73,"prot":1,"sub1":"85g iogurte grego + morango ≈97 kcal","sub2":"1 fatia pão + 15g requeijão ≈97 kcal" },
+        { "time":"19:00","name":"Jantar","food":"MARMITA: 100g carne moída refogada + 80g purê batata + salada verde c/ limão","kcal":267,"prot":26,"sub1":"100g frango + 100g batata-doce + salada ≈250 kcal","sub2":"Omelete (2 ovos+20g queijo+20g presunto)+salada+pão ≈320 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de camomila + 85g iogurte grego + ½ banana (50g)","kcal":131,"prot":8,"sub1":"Chá + 85g iogurte ≈82 kcal","sub2":"200ml leite morno + canela ≈70 kcal" }
+      ],
+      "Terça": [
+        { "time":"07:00","name":"Café","food":"☕ Café c/ leite (100ml) + cuscuz (80g) + 1 ovo + 20g queijo minas + morango (60g)","kcal":310,"prot":16,"sub1":"Mingau aveia (30g+100ml leite+mel+banana 60g)+café ≈318 kcal","sub2":"Omelete (1 ovo+20g queijo+20g presunto)+1 fatia pão+café ≈265 kcal" },
+        { "time":"10:00","name":"Lanche","food":"1 banana (75g)","kcal":74,"prot":1,"sub1":"1 pera (130g) ≈69 kcal","sub2":"85g iogurte grego ≈82 kcal" },
+        { "time":"12:00","name":"Almoço","food":"MARMITA: 120g merluza assada + 80g arroz int. + 50ml molho tomate + salada verde c/ vinagrete","kcal":289,"prot":35,"sub1":"120g frango + 80g arroz + 50ml molho + salada ≈320 kcal","sub2":"120g tilápia + 80g arroz + 80g feijão + salada ≈312 kcal" },
+        { "time":"15:00","name":"Lanche","food":"1 fatia pão + 15g requeijão","kcal":97,"prot":4,"sub1":"1 maçã (130g) ≈73 kcal","sub2":"85g iogurte grego ≈82 kcal" },
+        { "time":"19:00","name":"Jantar","food":"MARMITA Yakisoba: 80g macarrão + 100g frango tiras + 1 ovo + 15ml shoyu + salada","kcal":369,"prot":38,"sub1":"100g frango + 100g batata-doce + salada ≈250 kcal","sub2":"Omelete (2 ovos+20g queijo)+salada+pão ≈279 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de erva-cidreira + 1 maçã (130g)","kcal":73,"prot":1,"sub1":"85g iogurte grego ≈82 kcal","sub2":"Chá + 1 laranja ≈56 kcal" }
+      ],
+      "Quarta": [
+        { "time":"07:00","name":"Café","food":"☕ Café c/ leite (100ml) + omelete (1 ovo + 20g muçarela + 20g presunto) + 1 fatia pão","kcal":265,"prot":17,"sub1":"Cuscuz 80g + 1 ovo + 20g queijo + café ≈310 kcal","sub2":"Mingau aveia (30g+100ml leite+mel+morango 60g)+café ≈288 kcal" },
+        { "time":"10:00","name":"Lanche","food":"85g iogurte grego + ½ maçã (80g)","kcal":117,"prot":8,"sub1":"1 banana (75g) + 10g amendoim ≈135 kcal","sub2":"1 pera (130g) ≈69 kcal" },
+        { "time":"12:00","name":"Almoço","food":"MARMITA: 120g bife acebolado + 80g arroz int. + 50ml molho caseiro + salada verde c/ vinagrete","kcal":345,"prot":44,"sub1":"120g frango + 80g arroz + 80g lentilha + salada ≈351 kcal","sub2":"120g tilápia + 80g arroz + 1 ovo + salada ≈312 kcal" },
+        { "time":"15:00","name":"Lanche","food":"1 pera (130g)","kcal":69,"prot":1,"sub1":"1 fatia pão + 15g requeijão ≈97 kcal","sub2":"85g iogurte grego + morango ≈97 kcal" },
+        { "time":"19:00","name":"Jantar","food":"Risoto: 80g arroz (fresco) + 100g frango desfiado + 15g parmesão + salada verde","kcal":325,"prot":34,"sub1":"100g carne moída + 80g macarrão + salada ≈320 kcal","sub2":"Escondidinho: 80g purê+100g frango+20g queijo+salada ≈278 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de hortelã + 85g iogurte grego","kcal":82,"prot":8,"sub1":"Chá + 1 maçã ≈73 kcal","sub2":"200ml leite morno ≈70 kcal" }
+      ],
+      "Quinta": [
+        { "time":"07:00","name":"Café","food":"☕ Café c/ leite (100ml) + crepioca (1 ovo + 30g tapioca + 20g muçarela) + banana peq. (60g)","kcal":300,"prot":12,"sub1":"Cuscuz 80g + 1 ovo + 20g queijo + café ≈310 kcal","sub2":"Mingau aveia (30g+100ml leite+mel+banana 60g)+café ≈318 kcal" },
+        { "time":"10:00","name":"Lanche","food":"1 maçã (130g)","kcal":73,"prot":1,"sub1":"1 banana (75g) ≈74 kcal","sub2":"85g iogurte grego + morango ≈97 kcal" },
+        { "time":"12:00","name":"Almoço","food":"MARMITA: 120g frango grelhado + 80g macarrão int. + 30g molho branco light + salada verde","kcal":353,"prot":43,"sub1":"120g carne panela + 80g arroz + 50ml molho + salada ≈343 kcal","sub2":"120g tilápia + 80g arroz + 1 ovo + salada ≈312 kcal" },
+        { "time":"15:00","name":"Lanche","food":"1 ovo cozido + 1 pera (130g)","kcal":142,"prot":8,"sub1":"85g iogurte grego + morango 50g ≈97 kcal","sub2":"1 fatia pão + 15g requeijão ≈97 kcal" },
+        { "time":"19:00","name":"Jantar","food":"MARMITA: 100g carne moída bolonhesa + 100g batata-doce + 20g muçarela + salada","kcal":346,"prot":26,"sub1":"100g frango + 100g batata-doce + salada ≈250 kcal","sub2":"Omelete (2 ovos+20g queijo)+salada+pão ≈279 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de camomila + 85g iogurte grego","kcal":82,"prot":8,"sub1":"Chá + 1 laranja ≈56 kcal","sub2":"200ml leite morno ≈70 kcal" }
+      ],
+      "Sexta": [
+        { "time":"07:00","name":"Café","food":"☕ Café c/ leite (100ml) + 1 ovo cozido + 1 fatia pão + 15g requeijão + laranja peq. (100g)","kcal":242,"prot":14,"sub1":"Cuscuz 80g + 1 ovo + 20g queijo + café ≈310 kcal","sub2":"Mingau aveia (30g+100ml leite+mel+morango 60g)+café ≈288 kcal" },
+        { "time":"10:00","name":"Lanche","food":"1 banana (75g) + 10g amendoim","kcal":135,"prot":3,"sub1":"85g iogurte grego + morango ≈97 kcal","sub2":"1 maçã (130g) ≈73 kcal" },
+        { "time":"12:00","name":"Almoço","food":"MARMITA: 120g tilápia crosta far. arroz + 80g arroz int. + salada verde c/ vinagrete","kcal":326,"prot":35,"sub1":"120g frango + 80g arroz + 50ml molho + salada ≈320 kcal","sub2":"100g carne moída + 80g macarrão + 50ml molho + salada ≈330 kcal" },
+        { "time":"15:00","name":"Lanche","food":"85g iogurte grego + banana peq. (60g)","kcal":141,"prot":8,"sub1":"1 pera (130g) + 10g amendoim ≈130 kcal","sub2":"1 fatia pão + 15g requeijão ≈97 kcal" },
+        { "time":"19:00","name":"Jantar","food":"MARMITA: 100g carne moída refogada + 80g arroz int. + 50ml molho + salada verde","kcal":323,"prot":22,"sub1":"100g frango + 100g batata-doce + salada ≈250 kcal","sub2":"Omelete (2 ovos+20g queijo+20g presunto)+salada+pão ≈320 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de erva-cidreira + 1 pera (130g)","kcal":69,"prot":1,"sub1":"85g iogurte grego ≈82 kcal","sub2":"200ml leite morno ≈70 kcal" }
+      ],
+      "Sábado": [
+        { "time":"08:00","name":"Café","food":"☕ Café c/ leite (200ml) + tapioca 30g + 1 ovo + 20g queijo coalho + 150ml suco laranja nat.","kcal":345,"prot":14,"sub1":"French toast (pão+ovo)+200ml leite+banana ≈290 kcal","sub2":"Mingau aveia (30g+200ml leite+mel+banana)+café ≈350 kcal" },
+        { "time":"10:00","name":"Lanche","food":"Vitamina: banana (75g) + 200ml leite","kcal":144,"prot":8,"sub1":"Vitamina: 100g morango + 200ml leite ≈100 kcal","sub2":"85g iogurte + morango ≈97 kcal" },
+        { "time":"12:00","name":"Almoço Fixo","food":"100g arroz branco + 80g feijão + 2 ovos grelhados + salada verde c/ vinagrete","kcal":348,"prot":21,"sub1":"100g arroz + 80g lentilha + 2 ovos + salada ≈361 kcal","sub2":"Sem substituição" },
+        { "time":"15:00","name":"Lanche","food":"Crepioca: 1 ovo + 30g tapioca + 20g muçarela","kcal":207,"prot":10,"sub1":"Panqueca (1 ovo+60g banana+20g far. arroz) ≈190 kcal","sub2":"85g iogurte + banana peq. ≈141 kcal" },
+        { "time":"19:00","name":"Jantar","food":"Escondidinho: 80g purê + 100g carne moída + 20g muçarela + salada verde","kcal":318,"prot":28,"sub1":"120g frango + 80g macarrão + 20g queijo + salada ≈296 kcal","sub2":"Omelete (2 ovos+20g queijo+presunto)+salada+pão ≈320 kcal" },
+        { "time":"21:00","name":"Ceia","food":"200ml leite morno + canela","kcal":70,"prot":7,"sub1":"85g iogurte ≈82 kcal","sub2":"Chá camomila (opcional)" }
+      ],
+      "Domingo": [
+        { "time":"08:00","name":"Café","food":"☕ Café c/ leite (200ml) + French toast (1 fatia pão + 1 ovo) + canela + 50g banana","kcal":290,"prot":14,"sub1":"Cuscuz 80g + 1 ovo + 20g queijo + 200ml leite ≈330 kcal","sub2":"Mingau aveia (30g+200ml leite+mel+morango)+café ≈320 kcal" },
+        { "time":"10:00","name":"Lanche","food":"Vitamina: 100g morango + 200ml leite","kcal":100,"prot":7,"sub1":"Vitamina: banana (75g) + 200ml leite ≈144 kcal","sub2":"85g iogurte + morango ≈97 kcal" },
+        { "time":"12:00","name":"Almoço","food":"120g maminha grelhada + 80g arroz int. + 80g purê batata + salada verde c/ vinagrete","kcal":313,"prot":39,"sub1":"120g frango assado + 80g arroz + 80g purê + salada ≈339 kcal","sub2":"120g tilápia + 80g arroz + 80g lentilha + salada ≈312 kcal" },
+        { "time":"15:00","name":"Lanche","food":"Panqueca: 1 ovo + 60g banana + 20g far. arroz","kcal":190,"prot":7,"sub1":"Crepioca (1 ovo+30g tapioca+20g queijo) ≈207 kcal","sub2":"85g iogurte + banana peq. ≈141 kcal" },
+        { "time":"19:00","name":"Jantar","food":"Canja: 100g frango + 80g arroz + temperos + salada verde","kcal":255,"prot":30,"sub1":"Sopa: 100g frango + 80g batata + 30g creme leite + salada ≈233 kcal","sub2":"100g tilápia + 100g batata-doce + salada ≈225 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de camomila + 200ml leite morno","kcal":70,"prot":7,"sub1":"85g iogurte ≈82 kcal","sub2":"Chá (opcional)" }
+      ]
+    }
+  },
+  "D": {
+    "info": "Semanas 4, 8, 12, 16, 20, 24",
+    "prep": [
+      { item: "Arroz Integral (400g)", modo: "Cozinhar simples", dest: "3 col. (80g) cada dia útil" },
+      { item: "Macarrão Integral (80g)", modo: "Al dente", dest: "80g Jan Seg" },
+      { item: "Purê Batata (160g)", modo: "Amassar", dest: "80g (Alm Ter); 80g (Jan Sex)" },
+      { item: "Batata-doce (100g)", modo: "Rodelas", dest: "100g (Jan Qui)" },
+      { item: "Frango (340g)", modo: "120g Gratinado; 100g Desfiado; 120g Grelhado", dest: "Distribuir" },
+      { item: "Carne Panela (120g)", modo: "Pressão", dest: "120g (Alm Qua)" },
+      { item: "Carne Moída (200g)", modo: "100g Bolonhesa; 100g Refogada", dest: "100g (Jan Seg); 100g (Jan Qui)" },
+      { item: "Tilápia (240g)", modo: "120g Assada; 120g Grelhada", dest: "120g (Jan Ter); 120g (Alm Sex)" },
+      { item: "Vinagrete + Salada Verde", modo: "Preparar e embalar", dest: "Livre" }
+    ],
+    "shop": [
+      { cat: "PROTEÍNAS", text: "Frango (340g) · Carne Panela (120g) · Carne moída (200g) · Tilápia (240g) · Maminha Dom (120g) · Ovos (18 un) · Presunto (30g)" },
+      { cat: "SALADAS", text: "Alface (1 pé) · Tomate (500g) · Cebola (250g) · Pepino (1 un) · Cenoura (1 un) · Limão (2 un)" },
+      { cat: "CARBOIDRATOS", text: "Arroz int. (400g) · Arroz branco (100g) · Macarrão (80g) · Batata (160g) · Batata-doce (100g) · Aveia (120g) · Cuscuz (100g) · Pão (1 pct) · Tapioca (90g) · Tortilha (1 un)" },
+      { cat: "LATICÍNIOS", text: "Iogurte grego (8 un) · Leite desnatado (2L) · Muçarela (80g) · Queijo minas (40g) · Requeijão light (30g)" },
+      { cat: "FRUTAS", text: "Banana (6 un) · Maçã (3 un) · Pera (2 un) · Laranja (2 un) · Morango (250g)" },
+      { cat: "OUTROS", text: "Mel · Café · Chá hortelã · Amendoim (40g) · Vinagre · Molho tomate (250ml)" }
+    ],
+    "days": {
+      "Segunda": [
+        { "time":"07:00","name":"Café","food":"☕ Café c/ leite (100ml) + cuscuz (80g) + 1 ovo + 20g muçarela + 20g presunto","kcal":330,"prot":18,"sub1":"Mingau aveia (30g+100ml leite+mel+banana 60g)+café ≈318 kcal","sub2":"Tapioca 30g + 1 ovo + 20g queijo + banana + café ≈300 kcal" },
+        { "time":"10:00","name":"Lanche","food":"1 maçã (130g) + 10g amendoim","kcal":134,"prot":3,"sub1":"1 banana (75g) + 10g amendoim ≈135 kcal","sub2":"85g iogurte grego + morango ≈97 kcal" },
+        { "time":"12:00","name":"Almoço","food":"MARMITA: 120g frango grelhado + 80g arroz int. + 1 ovo + 50ml molho + salada verde c/ vinagrete","kcal":394,"prot":48,"sub1":"120g tilápia + 80g arroz + 50ml molho + salada ≈285 kcal","sub2":"100g carne moída + 80g macarrão + 50ml molho + salada ≈330 kcal" },
+        { "time":"15:00","name":"Lanche","food":"1 pera (130g)","kcal":69,"prot":1,"sub1":"85g iogurte grego + morango ≈97 kcal","sub2":"1 fatia pão + 15g requeijão ≈97 kcal" },
+        { "time":"19:00","name":"Jantar","food":"MARMITA: 80g macarrão int. bolonhesa (100g carne moída) + 50ml molho + salada verde","kcal":348,"prot":25,"sub1":"100g frango + 100g batata-doce + salada ≈250 kcal","sub2":"Omelete (2 ovos+20g queijo)+salada+pão ≈279 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de camomila + 85g iogurte grego + ½ banana (50g)","kcal":131,"prot":8,"sub1":"Chá + 85g iogurte ≈82 kcal","sub2":"200ml leite morno ≈70 kcal" }
+      ],
+      "Terça": [
+        { "time":"07:00","name":"Café","food":"☕ Café c/ leite (100ml) + omelete (1 ovo + 20g queijo + 20g presunto) + 1 fatia pão","kcal":265,"prot":17,"sub1":"Cuscuz 80g + 1 ovo + 20g queijo + café ≈310 kcal","sub2":"Mingau aveia (30g+100ml leite+mel+morango 60g)+café ≈288 kcal" },
+        { "time":"10:00","name":"Lanche","food":"1 banana (75g)","kcal":74,"prot":1,"sub1":"1 pera (130g) ≈69 kcal","sub2":"85g iogurte grego ≈82 kcal" },
+        { "time":"12:00","name":"Almoço","food":"MARMITA: 120g frango gratinado (50ml molho + 20g muçarela) + 80g arroz + 80g purê batata + salada verde","kcal":418,"prot":45,"sub1":"120g tilápia + 80g arroz + 1 ovo + salada ≈312 kcal","sub2":"120g carne panela + 80g arroz + 80g lentilha + salada ≈370 kcal" },
+        { "time":"15:00","name":"Lanche","food":"85g iogurte grego + morango 50g","kcal":97,"prot":8,"sub1":"1 fatia pão + 15g requeijão ≈97 kcal","sub2":"1 maçã (130g) ≈73 kcal" },
+        { "time":"19:00","name":"Jantar","food":"MARMITA: 120g tilápia assada + 80g arroz int. + 50ml molho + salada verde c/ limão","kcal":285,"prot":35,"sub1":"100g frango + 80g macarrão + salada ≈265 kcal","sub2":"Omelete (2 ovos+20g queijo+presunto)+salada+pão ≈320 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de erva-cidreira + 1 maçã (130g)","kcal":73,"prot":1,"sub1":"85g iogurte grego ≈82 kcal","sub2":"Chá + 1 laranja ≈56 kcal" }
+      ],
+      "Quarta": [
+        { "time":"07:00","name":"Café","food":"☕ Café c/ leite (100ml) + mingau aveia (30g aveia + 100ml leite + 10g mel + banana peq. 60g)","kcal":318,"prot":14,"sub1":"Cuscuz 80g + 1 ovo + 20g queijo + café ≈310 kcal","sub2":"Tapioca 30g + 1 ovo + 20g queijo + laranja + café ≈280 kcal" },
+        { "time":"10:00","name":"Lanche","food":"85g iogurte grego + ½ maçã (80g)","kcal":117,"prot":8,"sub1":"1 pera (130g) ≈69 kcal","sub2":"1 banana (75g) + 10g amendoim ≈135 kcal" },
+        { "time":"12:00","name":"Almoço","food":"MARMITA: 120g carne de panela + 80g arroz int. + 80g lentilha + salada verde c/ vinagrete","kcal":383,"prot":43,"sub1":"120g frango + 80g arroz + 80g feijão + salada ≈332 kcal","sub2":"100g carne moída + 80g macarrão + 50ml molho + salada ≈330 kcal" },
+        { "time":"15:00","name":"Lanche","food":"1 pera (130g)","kcal":69,"prot":1,"sub1":"85g iogurte grego + morango ≈97 kcal","sub2":"1 fatia pão + 15g requeijão ≈97 kcal" },
+        { "time":"19:00","name":"Jantar","food":"Pizza caseira: 1 tortilha int. (40g) + 50g frango desfiado + 20g muçarela + 50ml molho + salada","kcal":259,"prot":17,"sub1":"100g frango + 80g macarrão + salada ≈265 kcal","sub2":"100g carne moída + 80g purê + salada ≈267 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de hortelã + 85g iogurte grego + morango 50g","kcal":97,"prot":8,"sub1":"Chá + 1 maçã ≈73 kcal","sub2":"200ml leite morno ≈70 kcal" }
+      ],
+      "Quinta": [
+        { "time":"07:00","name":"Café","food":"☕ Café c/ leite (100ml) + crepioca (1 ovo + 30g tapioca + 20g muçarela) + laranja peq. (100g)","kcal":262,"prot":12,"sub1":"Cuscuz 80g + 1 ovo + 20g queijo + café ≈310 kcal","sub2":"Mingau aveia (30g+100ml leite+mel+banana 60g)+café ≈318 kcal" },
+        { "time":"10:00","name":"Lanche","food":"1 banana (75g) + 10g amendoim","kcal":135,"prot":3,"sub1":"1 maçã (130g) ≈73 kcal","sub2":"85g iogurte grego + morango ≈97 kcal" },
+        { "time":"12:00","name":"Almoço","food":"MARMITA: 120g frango grelhado + 80g arroz int. + 80g feijão + salada verde c/ vinagrete","kcal":345,"prot":44,"sub1":"120g tilápia + 80g arroz + 1 ovo + salada ≈312 kcal","sub2":"120g carne panela + 80g arroz + 80g lentilha + salada ≈383 kcal" },
+        { "time":"15:00","name":"Lanche","food":"85g iogurte grego + 1 pera (130g)","kcal":151,"prot":9,"sub1":"1 fatia pão + 15g requeijão ≈97 kcal","sub2":"1 banana (75g) + 10g amendoim ≈135 kcal" },
+        { "time":"19:00","name":"Jantar","food":"MARMITA: 100g carne moída refogada + 100g batata-doce + 20g muçarela + salada verde","kcal":346,"prot":26,"sub1":"100g frango + 80g macarrão + salada ≈265 kcal","sub2":"Omelete (2 ovos+20g queijo)+salada+pão ≈279 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de camomila + 1 laranja (150g)","kcal":56,"prot":2,"sub1":"85g iogurte grego ≈82 kcal","sub2":"200ml leite morno ≈70 kcal" }
+      ],
+      "Sexta": [
+        { "time":"07:00","name":"Café","food":"☕ Café c/ leite (100ml) + tapioca 30g + 1 ovo + 20g muçarela + laranja peq. (100g)","kcal":275,"prot":12,"sub1":"Cuscuz 80g + 1 ovo + 20g queijo + café ≈310 kcal","sub2":"Mingau aveia (30g+100ml leite+mel+morango 60g)+café ≈288 kcal" },
+        { "time":"10:00","name":"Lanche","food":"1 pera (130g)","kcal":69,"prot":1,"sub1":"1 banana (75g) ≈74 kcal","sub2":"85g iogurte grego + morango ≈97 kcal" },
+        { "time":"12:00","name":"Almoço","food":"MARMITA: 120g tilápia grelhada + 80g arroz int. + 80g lentilha + salada verde c/ vinagrete","kcal":325,"prot":39,"sub1":"120g frango + 80g arroz + 50ml molho + salada ≈320 kcal","sub2":"100g carne moída + 80g macarrão + 50ml molho + salada ≈330 kcal" },
+        { "time":"15:00","name":"Lanche","food":"85g iogurte grego + morango 50g","kcal":97,"prot":8,"sub1":"1 maçã (130g) ≈73 kcal","sub2":"1 fatia pão + 15g requeijão ≈97 kcal" },
+        { "time":"19:00","name":"Jantar","food":"MARMITA: Escondidinho (80g purê batata + 100g frango + 20g muçarela) + salada verde","kcal":278,"prot":34,"sub1":"100g tilápia + 80g macarrão + salada ≈265 kcal","sub2":"100g carne moída + 80g arroz + salada ≈310 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de erva-cidreira + 85g iogurte grego","kcal":82,"prot":8,"sub1":"Chá + 1 pera ≈69 kcal","sub2":"200ml leite morno ≈70 kcal" }
+      ],
+      "Sábado": [
+        { "time":"08:00","name":"Café","food":"☕ Café c/ leite (200ml) + tapioca 30g + 1 ovo + 20g queijo coalho + 150ml suco laranja","kcal":345,"prot":14,"sub1":"French toast (pão+ovo)+200ml leite+banana ≈290 kcal","sub2":"Mingau aveia (30g+200ml leite+mel+banana)+café ≈350 kcal" },
+        { "time":"10:00","name":"Lanche","food":"Vitamina: banana (75g) + 200ml leite","kcal":144,"prot":8,"sub1":"Vitamina: 100g morango + 200ml leite ≈100 kcal","sub2":"85g iogurte + morango ≈97 kcal" },
+        { "time":"12:00","name":"Almoço Fixo","food":"100g arroz branco + 80g feijão + 2 ovos grelhados + salada verde c/ vinagrete","kcal":348,"prot":21,"sub1":"100g arroz + 80g lentilha + 2 ovos + salada ≈361 kcal","sub2":"Sem substituição" },
+        { "time":"15:00","name":"Lanche","food":"Panqueca: 1 ovo + 60g banana + 20g far. arroz","kcal":190,"prot":7,"sub1":"85g iogurte + banana peq. ≈141 kcal","sub2":"Crepioca (1 ovo+30g tapioca+20g queijo) ≈207 kcal" },
+        { "time":"19:00","name":"Jantar","food":"120g frango empanado forno + 100g batata-doce + 50ml molho + salada verde","kcal":308,"prot":33,"sub1":"120g maminha + 80g arroz + salada ≈281 kcal","sub2":"100g frango + 80g macarrão + 20g queijo + salada ≈296 kcal" },
+        { "time":"21:00","name":"Ceia","food":"200ml leite morno + canela","kcal":70,"prot":7,"sub1":"85g iogurte ≈82 kcal","sub2":"Chá camomila (opcional)" }
+      ],
+      "Domingo": [
+        { "time":"08:00","name":"Café","food":"☕ Café c/ leite (200ml) + French toast (1 fatia pão + 1 ovo) + canela + 50g banana","kcal":290,"prot":14,"sub1":"Cuscuz 80g + 1 ovo + 20g queijo + 200ml leite ≈330 kcal","sub2":"Mingau aveia (30g+200ml leite+mel+morango)+café ≈320 kcal" },
+        { "time":"10:00","name":"Lanche","food":"Vitamina: 100g morango + 50g banana + 200ml leite","kcal":149,"prot":8,"sub1":"85g iogurte + morango ≈97 kcal","sub2":"Vitamina: banana (75g) + 200ml leite ≈144 kcal" },
+        { "time":"12:00","name":"Almoço","food":"120g maminha grelhada + 80g arroz int. + 80g purê batata + salada verde c/ vinagrete","kcal":313,"prot":39,"sub1":"120g frango assado + 80g arroz + 80g purê + salada ≈339 kcal","sub2":"120g tilápia + 80g arroz + 80g feijão + salada ≈312 kcal" },
+        { "time":"15:00","name":"Lanche","food":"Panqueca: 1 ovo + 60g banana + 20g far. arroz","kcal":190,"prot":7,"sub1":"85g iogurte + banana peq. ≈141 kcal","sub2":"Crepioca (1 ovo+30g tapioca+20g queijo) ≈207 kcal" },
+        { "time":"19:00","name":"Jantar","food":"Sopa: 100g carne moída + 80g macarrão + 80g batata + salada verde","kcal":343,"prot":25,"sub1":"Escondidinho: 80g purê+100g carne moída+20g queijo+salada ≈318 kcal","sub2":"Canja: 100g frango + 80g arroz ≈242 kcal" },
+        { "time":"21:00","name":"Ceia","food":"🍵 Chá de camomila + 200ml leite morno","kcal":70,"prot":7,"sub1":"85g iogurte ≈82 kcal","sub2":"Chá (opcional)" }
+      ]
+    }
+  }
+};
+
+const DAY_ORDER = ["Segunda","Terça","Quarta","Quinta","Sexta","Sábado","Domingo"];
+let currentWeek = "A", currentDay = "Segunda", currentSubView = "menu", currentCycle = 1;
+
+const WEEKS_CALENDAR = [];
+(function(){
+  const types = ["A","B","C","D"];
+  const start = new Date(2026, 2, 10);
+  for (let i = 0; i < 26; i++) {
+    const ws = new Date(start.getTime() + i * 7 * 86400000);
+    const we = new Date(ws.getTime() + 6 * 86400000);
+    const fmt = d => String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0');
+    WEEKS_CALENDAR.push({ num: i+1, type: types[i%4], cycle: Math.floor(i/4)+1, start: fmt(ws), end: fmt(we) });
+  }
+})();
+
+function showTab(id) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  const map = {"resumo":0,"meds":1,"weeks":2,"mensal":3,"taco":4};
+  document.querySelectorAll('.tab-btn')[map[id]].classList.add('active');
+  if (id==='weeks') renderWeeks();
+  if (id==='resumo') setTimeout(updateProgress, 200);
+  window.scrollTo(0,0);
+}
+
+function getCurrentWeekIdx() { return WEEKS_CALENDAR.findIndex(w => w.type===currentWeek && w.cycle===currentCycle); }
+
+function navWeek(dir) {
+  const idx = getCurrentWeekIdx();
+  const ni = Math.max(0, Math.min(25, idx+dir));
+  const wc = WEEKS_CALENDAR[ni];
+  currentWeek = wc.type; currentCycle = wc.cycle;
+  currentDay = 'Segunda'; renderWeeks();
+  document.getElementById('headerBadge').textContent = 'Sem ' + wc.num;
+}
+
+function selectDay(d) { currentDay = d; setSubView('menu'); renderWeeks(); }
+
+function setSubView(view) {
+  currentSubView = view;
+  document.querySelectorAll('.sub-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById({menu:'btnViewMenu',prep:'btnViewPrep',shop:'btnViewShop'}[view]).classList.add('active');
+  updateSubViewVisibility();
+}
+
+function updateSubViewVisibility() {
+  ['menu','prep','shop'].forEach(v => document.getElementById('view-'+v).style.display = currentSubView===v?'block':'none');
+  if (currentSubView==='menu') renderDay();
+  if (currentSubView==='prep') renderPrep();
+  if (currentSubView==='shop') renderShop();
+}
+
+function renderWeeks() {
+  const idx = getCurrentWeekIdx();
+  const cw = WEEKS_CALENDAR[idx>=0?idx:0];
+  document.getElementById('weekSel').innerHTML = `<div class="week-nav"><div class="week-nav-arrow" onclick="navWeek(-1)">‹</div><div class="week-nav-center"><div class="week-nav-num">Semana ${cw.num} de 26</div><div class="week-nav-date">${cw.start} a ${cw.end}</div><span class="week-nav-type">Cardápio ${cw.type} · Ciclo ${cw.cycle}</span></div><div class="week-nav-arrow" onclick="navWeek(1)">›</div></div>`;
+  const labels = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+  document.getElementById('daySel').innerHTML = '<div class="day-pills">' + DAY_ORDER.map((d,i) =>
+    `<div class="day-pill ${d===currentDay?'active':''} ${i>=5?'wknd':''}" onclick="selectDay('${d}')"><div class="day-pill-label">${labels[i]}</div><div class="day-pill-day">${labels[i].charAt(0)}</div></div>`
+  ).join('') + '</div>';
+  updateSubViewVisibility();
+}
+
+function getMealClass(n) {
+  if (n.includes('Café')) return 'cafe';
+  if (n.includes('Almoço')||n.includes('Fixo')) return 'almoco';
+  if (n.includes('Jantar')) return 'jantar';
+  if (n.includes('Ceia')) return 'ceia';
+  return 'lanche';
+}
+
+function formatFood(food) {
+  if (!food) return '';
+  let label='', clean=food;
+  if (food.startsWith('MARMITA Yakisoba:')) { label='<div class="meal-label">🍱 Yakisoba (Marmita)</div>'; clean=food.replace('MARMITA Yakisoba: ',''); }
+  else if (food.startsWith('MARMITA:')) { label='<div class="meal-label">🍱 Marmita</div>'; clean=food.replace('MARMITA: ',''); }
+  const items = clean.split(' + ');
+  if (items.length<=1 && !label) return `<div style="font-size:14px;line-height:1.5;margin-bottom:8px;font-weight:500;">${food}</div>`;
+  let html = label + '<div class="food-list">';
+  items.forEach(item => {
+    const t = item.trim();
+    const p1 = t.match(/^(.+?)\s+\(([^)]+)\)\s+(.+)$/);
+    const p2 = t.match(/^(.+?)\s+\(([^)]+)\)$/);
+    let name, measure;
+    if (p1 && p1[2].match(/\d/)) { name=`${p1[1]} ${p1[3]}`; measure=p1[2]; }
+    else if (p2) { name=p2[1]; measure=p2[2]; }
+    else { name=t; measure=''; }
+    html += `<div class="food-line"><div class="food-dot"></div><div class="food-desc"><span class="food-desc-name">${name}</span>${measure?`<span class="food-desc-measure">${measure}</span>`:''}</div></div>`;
+  });
+  return html + '</div>';
+}
+
+const MEDS_SCHEDULE = {
+  "07:00": [{ name:"Citalopram", dose:"20mg", cls:"med-pill-rose" },{ name:"Multivit.", dose:"1cp", cls:"med-pill-blue" }],
+  "08:00": [{ name:"Citalopram", dose:"20mg", cls:"med-pill-rose" },{ name:"Multivit.", dose:"1cp", cls:"med-pill-blue" }],
+  "12:00": [{ name:"Vit. D3", dose:"2000UI", cls:"med-pill-blue" },{ name:"Ômega 3", dose:"1cáps", cls:"med-pill-blue" }],
+  "21:00": [{ name:"Mg + B6", dose:"1cp", cls:"med-pill-purple" }]
+};
+
+function renderMedPills(time) {
+  const meds = MEDS_SCHEDULE[time];
+  if (!meds) return '';
+  let html = '<div class="meal-meds">';
+  meds.forEach(m => html += `<span class="med-pill ${m.cls}">💊 ${m.name} ${m.dose}</span>`);
+  return html + '</div>';
+}
+
+function renderDay() {
+  const meals = WEEKS[currentWeek].days[currentDay];
+  if (!meals) { document.getElementById('dayContent').innerHTML='<p>Sem dados</p>'; return; }
+  const totalKcal = meals.reduce((s,m)=>s+m.kcal,0);
+  const totalProt = meals.reduce((s,m)=>s+m.prot,0);
+  let html = `<div class="day-total"><span>🔥 ${totalKcal} kcal</span><span>💪 ${totalProt}g prot</span></div>`;
+  meals.forEach(m => {
+    html += `<div class="meal ${getMealClass(m.name)}">
+      <div class="meal-header"><div><span class="meal-time">${m.time}</span></div>
+      <div class="badges-container"><span class="badge badge-cal">${m.kcal} kcal</span><span class="badge badge-prot">${m.prot}g P</span></div></div>
+      <div class="meal-name">${m.name}</div>
+      ${formatFood(m.food)}
+      ${renderMedPills(m.time)}
+      <details class="meal-subs"><summary>Opções de Troca</summary>
+      <div class="sub"><strong>Opção 2:</strong> ${m.sub1}</div>
+      <div class="sub" style="${m.sub2?'':'display:none;'}"><strong>Opção 3:</strong> ${m.sub2}</div></details></div>`;
+  });
+  document.getElementById('dayContent').innerHTML = html;
+}
+
+function renderPrep() {
+  const pd = WEEKS[currentWeek].prep;
+  let html = `<div class="card-title">👩‍🍳 Meal Prep (Domingo) - Sem ${currentWeek}</div><div style="font-size:13px;color:var(--text-sec);margin-bottom:16px;">Prepare estas quantidades para a semana.</div>`;
+  pd.forEach(p => html += `<div class="list-item"><strong>${p.item}</strong><span style="font-style:italic;">Preparo: ${p.modo}</span><span style="color:var(--primary-dark);font-weight:600;">📦 ${p.dest}</span></div>`);
+  document.getElementById('prepContent').innerHTML = html;
+}
+
+function renderShop() {
+  const sd = WEEKS[currentWeek].shop;
+  let html = `<div class="card-title">🛒 Lista de Compras - Sem ${currentWeek}</div><div style="font-size:13px;color:var(--text-sec);margin-bottom:16px;">Itens desta semana.</div>`;
+  sd.forEach(s => html += `<div class="list-cat">${s.cat}</div><div class="list-item" style="border:none;padding:4px 0;"><span style="font-size:14px;color:var(--text-main);">${s.text}</span></div>`);
+  document.getElementById('shopContent').innerHTML = html;
+}
+
+function autoDetectWeek() {
+  const now = new Date(), planStart = new Date(2026,2,10);
+  const dd = Math.floor((now-planStart)/86400000);
+  if (dd<0) return {weekIdx:0,dayIdx:0};
+  if (dd>=26*7) return {weekIdx:25,dayIdx:6};
+  return {weekIdx:Math.min(Math.floor(dd/7),25),dayIdx:Math.min(dd%7,6)};
+}
+
+const detected = autoDetectWeek();
+const dw = WEEKS_CALENDAR[detected.weekIdx];
+if (dw) { currentWeek=dw.type; currentCycle=dw.cycle; }
+currentDay = DAY_ORDER[detected.dayIdx]||'Segunda';
+
+function updateProgress() {
+  const det = autoDetectWeek(), we=det.weekIdx;
+  const wl=Math.min(we*0.5,13), cw=89-wl, pct=Math.min((wl/13)*100,100);
+  const pa=document.getElementById('pesoAtual'), pl=document.getElementById('progressWeekLabel');
+  const plo=document.getElementById('pesoLost'), pr=document.getElementById('pesoRemain');
+  const f=document.getElementById('progressFill'), b=document.getElementById('headerBadge');
+  if(pa) pa.innerHTML=`<strong>${cw.toFixed(1)} kg</strong> estimado`;
+  if(pl) pl.textContent=`Semana ${we}/26`;
+  if(plo) plo.textContent=`↓ ${wl.toFixed(1)} kg perdidos`;
+  if(pr) pr.textContent=`${(13-wl).toFixed(1)} kg restantes`;
+  if(b) b.textContent=`Sem ${we+1}`;
+  if(f){f.style.width='0%';requestAnimationFrame(()=>requestAnimationFrame(()=>{f.style.width=Math.max(pct,2)+'%';}));}
+}
+
+renderWeeks(); updateProgress();
+</script>
+</body>
+</html>
